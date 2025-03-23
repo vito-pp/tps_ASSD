@@ -1,6 +1,6 @@
 LTspice 24.0.12 for Windows
 Circuit: * C:\users\vito\Documents\facu\4y\1Q\tps\labo3\practica1\SnH.asc
-Start Time: Sun Mar 23 16:01:39 2025
+Start Time: Sun Mar 23 16:15:52 2025
 solver = Normal
 Maximum thread count: 8
 tnom = 27
@@ -26,6 +26,5 @@ Gmin = 5.14045
 Gmin = 0
 Gmin stepping succeeded in finding the operating point.
 
-Heightened Def Con from 0.00183868 to 0.00183868
-Total elapsed time: 19.284 seconds.
+Total elapsed time: 16.985 seconds.
 

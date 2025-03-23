@@ -1,12 +1,6 @@
 LTspice 24.0.12 for Windows
 Circuit: * C:\users\vito\Documents\facu\4y\1Q\tps\labo3\practica1\SnH.asc
-Start Time: Mon Mar 17 12:53:57 2025
-Warning: Multiple definitions of model "pnp1" Type: BJT
-Warning: Multiple definitions of model "npn1" Type: BJT
-Error on line 52 : .model u12:d1 d is=923.17e-18 rs=10 cjo=1.0000e-12 m=.3333 vj=.75  isr=100.00e-12 bv=35.357 ibv=10u tt=5.0000e-9*
-	* Unrecognized parameter "*" -- ignored
-Error on line 52 : .model u10:d1 d is=923.17e-18 rs=10 cjo=1.0000e-12 m=.3333 vj=.75  isr=100.00e-12 bv=35.357 ibv=10u tt=5.0000e-9*
-	* Unrecognized parameter "*" -- ignored
+Start Time: Sun Mar 23 16:01:39 2025
 solver = Normal
 Maximum thread count: 8
 tnom = 27
@@ -32,5 +26,6 @@ Gmin = 5.14045
 Gmin = 0
 Gmin stepping succeeded in finding the operating point.
 
-Total elapsed time: 3.040 seconds.
+Heightened Def Con from 0.00183868 to 0.00183868
+Total elapsed time: 19.284 seconds.
 

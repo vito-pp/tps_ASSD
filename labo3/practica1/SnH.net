@@ -18,20 +18,19 @@ C3 N004 0 560p
 R7 snh_out 0 10k
 C4 snh_out 0 1p
 R8 N005 snh_out_iso 0.1
-R9 N006 0 10k
-C5 N006 0 10p
-R10 N007 snh_out_iso 0.1
-R11 N008 0 10k
-C6 N008 0 10p
-V1 sgn_in 0 SINE(0 1 1k)
-XU1 N003 N001 Vcc 0 NC_01 N002 0 LM311
-XU6 sgn_in CLK1 0 Vss N004 snh_out Vdd LF398H
-XU10 N005 N006 CLK3 Vdd Vss 54HC4016
-XU12 N007 N008 CLK4 Vdd Vss 54HC4016
-.tran 10m
-.lib /home/vito/.wine/drive_c/users/vito/Documents/LTspice/ana_swit.lib
-.lib /home/vito/.wine/drive_c/users/vito/Documents/LTspice/LTSpiceASSDLib.lib
-.lib /home/vito/Documents/LTspice/Libraries/LTSpiceASSDLib.lib
+R9 Sample_N 0 10k
+C5 Sample_N 0 10p
+R10 N006 snh_out_iso 0.1
+R11 Sample_I 0 10k
+C6 Sample_I 0 10p
+V1 sgn_in 0 SINE(0 1 5k9)
+XU1 N006 Sample_I CLK4 Vdd Vss 54HC4016
+XU11 N005 Sample_N CLK3 Vdd Vss 54HC4016
+XU12 sgn_in CLK1 0 Vss N004 snh_out Vdd LF398H
+XU13 N003 N001 Vcc 0 NC_01 N002 0 LM311
+.tran 0 3m 1m
+.lib C:\users\vito\Documents\LTspice\Libraries\ana_swit.lib
+.lib C:\users\vito\Documents\LTspice\Libraries\LTSpiceASSDLib.lib
 .lib TCLib/supply.lib
 .lib TCLib/TL082.lib
 .lib TCLib/vcc.lib

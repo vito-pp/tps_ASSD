@@ -1,0 +1,40 @@
+* C:\users\vito\Documents\facu\4y\1Q\tps\labo3\practica1\SnH.asc
+XU2 CLK0 CLK1 Vcc 0 74HCU04
+Rv N002 N001 105k
+C1 N001 0 2n2 IC=1
+R2 N003 0 18k
+R3 Vcc N003 18k
+XU7 Vcc vcc V=15
+C2 CLK0 0 10p
+R4 Vcc N002 1k
+XU3 CLK1 CLK2 Vcc 0 74HCU04
+XU4 CLK2 CLK3 Vcc 0 74HCU04
+XU5 CLK3 CLK4 Vcc 0 74HCU04
+R5 CLK0 N002 100
+R6 N002 N003 33k
+XU8 Vdd Vss 0 supply Vp=5 Vn=5
+XU9 snh_out snh_out_iso Vdd Vss snh_out_iso TL082
+C3 N004 0 560p
+R7 snh_out 0 10k
+C4 snh_out 0 1p
+R8 N005 snh_out_iso 0.1
+R9 N006 0 10k
+C5 N006 0 10p
+R10 N007 snh_out_iso 0.1
+R11 N008 0 10k
+C6 N008 0 10p
+V1 sgn_in 0 SINE(0 1 1k)
+XU1 N003 N001 Vcc 0 NC_01 N002 0 LM311
+XU6 sgn_in CLK1 0 Vss N004 snh_out Vdd LF398H
+XU10 N005 N006 CLK3 Vdd Vss 54HC4016
+XU12 N007 N008 CLK4 Vdd Vss 54HC4016
+.tran 10m
+.lib /home/vito/.wine/drive_c/users/vito/Documents/LTspice/ana_swit.lib
+.lib /home/vito/.wine/drive_c/users/vito/Documents/LTspice/LTSpiceASSDLib.lib
+.lib /home/vito/Documents/LTspice/Libraries/LTSpiceASSDLib.lib
+.lib TCLib/supply.lib
+.lib TCLib/TL082.lib
+.lib TCLib/vcc.lib
+.lib TCLib\74HCU04.lib
+.backanno
+.end

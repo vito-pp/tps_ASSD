@@ -18,4 +18,11 @@ build/
 .idea/
 
 # Environment variables
-.env 
+.env
+
+#LTspice
+.op.raw
+.raw
+.log
+.fft
+.net 

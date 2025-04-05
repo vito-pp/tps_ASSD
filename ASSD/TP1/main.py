@@ -12,9 +12,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QGraphicsView,
                            QGraphicsItem, QGraphicsLineItem, QMenu, QDialog,
                            QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                            QPushButton, QSpinBox, QDoubleSpinBox, QFormLayout,
-                           QTabWidget, QSplitter, QMessageBox)
-from PyQt6.QtCore import Qt, QRectF, QPointF
-from PyQt6.QtGui import QPen, QBrush, QColor, QPainter
+                           QTabWidget, QSplitter, QMessageBox, QSplashScreen)
+from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer, QPropertyAnimation
+from PyQt6.QtGui import QPen, QBrush, QColor, QPainter, QPixmap, QIcon
 
 class Port(QGraphicsItem):
     def __init__(self, parent, x, y, is_input=True, is_clock=False):
@@ -280,21 +280,40 @@ class Block(QGraphicsItem):
         elif self.block_type == 'S&H':
             # Sample and hold implementation
             if clock_signal is not None:
-                # Sample the input signal where clock is high
-                sampled_signal = np.zeros_like(input_signal)
-                for i in range(len(clock_signal)):
-                    if clock_signal[i] > 0.5:  # If clock is high
-                        sampled_signal[i] = input_signal[i]
+                # Create output signal array
+                output_signal = np.zeros_like(input_signal)
                 
-                # Hold the value
-                held_signal = np.zeros_like(sampled_signal)
+                # Calculate clock frequency from the clock signal
+                # Find transitions from low to high to determine period
+                transitions = []
+                for i in range(1, len(clock_signal)):
+                    if clock_signal[i-1] <= 0.5 and clock_signal[i] > 0.5:
+                        transitions.append(i)
+                
+                # Calculate average period in samples
+                if len(transitions) > 1:
+                    avg_period = np.mean(np.diff(transitions))
+                    clock_freq = 44100 / avg_period  # Using default sample rate
+                else:
+                    # Default if we can't detect
+                    clock_freq = 1000
+                
+                # Process each sample - implement true sample and hold
                 last_value = 0
-                for i in range(len(sampled_signal)):
-                    if sampled_signal[i] != 0:
-                        last_value = sampled_signal[i]
-                    held_signal[i] = last_value
+                for i in range(len(clock_signal)):
+                    # Detect rising edge of clock (transition from low to high)
+                    if i > 0 and clock_signal[i-1] <= 0.5 and clock_signal[i] > 0.5:
+                        # At rising edge, sample the input
+                        last_value = input_signal[i]
                     
-                return held_signal
+                    # Always output the last sampled value (true sample and hold)
+                    output_signal[i] = last_value
+                
+                # Note: We're no longer applying the sinc envelope in the frequency domain
+                # The staircase pattern in the time domain already correctly represents
+                # sample-and-hold behavior, and applying the sinc transform was distorting it
+                
+                return output_signal
             else:
                 # If no clock signal, just pass through
                 return input_signal
@@ -303,7 +322,17 @@ class Block(QGraphicsItem):
             # Analog switch implementation
             if clock_signal is not None:
                 # Signal passes through only when clock is high
-                return input_signal * (clock_signal > 0.5)
+                # Create output signal array initialized to zeros
+                output_signal = np.zeros_like(input_signal)
+                
+                # For each sample, check if clock is high (>0.5)
+                for i in range(len(clock_signal)):
+                    if clock_signal[i] > 0.5:
+                        # When clock is high, input passes through
+                        output_signal[i] = input_signal[i]
+                    # When clock is low, output remains zero (already initialized as such)
+                
+                return output_signal
             else:
                 # If no clock signal, just pass through
                 return input_signal
@@ -539,6 +568,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Sampling Circuit Simulator")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon('AppLogo.png'))  # Set the window icon
         
         # Create main widget and layout
         main_widget = QWidget()
@@ -607,6 +637,9 @@ class MainWindow(QMainWindow):
         # Dictionary to store output signals for each block
         output_signals = {}
         
+        # Dictionary to store input signals for each block (for visualization)
+        input_connections = {}
+        
         # Process source blocks first (Signal, Clock, Noise)
         source_blocks = [block for block in all_blocks if block.block_type in ['Signal', 'Clock', 'Noise']]
         print(f"Found {len(source_blocks)} source blocks")
@@ -631,6 +664,9 @@ class MainWindow(QMainWindow):
         # Sort the remaining blocks to ensure we process in order (simple topological sort)
         remaining_blocks = [block for block in all_blocks if block not in source_blocks]
         print(f"Remaining blocks to process: {len(remaining_blocks)}")
+        
+        # Store the original input signals for visualization
+        raw_input_signals = {}
         
         # Repeat until all blocks are processed or no more can be processed
         processed = set(block.id for block in source_blocks)
@@ -674,6 +710,13 @@ class MainWindow(QMainWindow):
                             all_inputs_ready = False
                             print(f"  Source block not processed yet, skipping")
                             break
+                        
+                        # Store original input signal for visualization
+                        # Only for regular input ports (not clock)
+                        if not port.is_clock and source_block.id in output_signals:
+                            if block.id not in raw_input_signals:
+                                raw_input_signals[block.id] = []
+                            raw_input_signals[block.id].append(output_signals[source_block.id])
                         
                         # Store signal based on port type
                         if port.is_clock:
@@ -742,6 +785,28 @@ class MainWindow(QMainWindow):
                 print("Warning: Could not process all blocks. Check for cycles or disconnected blocks.")
                 break
         
+        # Gather input signals from all connected ports
+        for block in all_blocks:
+            # Create a list to store input signals for this block
+            block_inputs = []
+            
+            for port in block.input_ports:
+                for conn in port.connections:
+                    # Find the source port
+                    if conn.end_port == port:
+                        source_port = conn.start_port
+                    else:
+                        source_port = conn.end_port
+                        
+                    source_block = source_port.parentItem()
+                    if source_block.id in processed:
+                        # Store the connection info
+                        block_inputs.append(output_signals[source_block.id])
+            
+            # Store the input signals for visualization
+            if block_inputs:
+                input_connections[block.id] = block_inputs[0] if len(block_inputs) == 1 else block_inputs
+        
         # Show the output signals
         print(f"Showing output signals for {len(output_signals)} blocks")
         
@@ -758,7 +823,9 @@ class MainWindow(QMainWindow):
             elif block.block_type == 'Noise':
                 block_info[block.id]['params'] = block.noise_params
                 
-        viewer = SignalViewerDialog(output_signals, time_array, block_info=block_info)
+        # Pass raw input signals to the viewer for visualization
+        viewer = SignalViewerDialog(output_signals, time_array, block_info=block_info, 
+                                  raw_input_signals=raw_input_signals)
         viewer.exec()
     
     def eventFilter(self, obj, event):
@@ -924,7 +991,8 @@ class ClockConfigDialog(QDialog):
         }
 
 class SignalViewerDialog(QDialog):
-    def __init__(self, signals=None, time_array=None, parent=None, block_info=None):
+    def __init__(self, signals=None, time_array=None, parent=None, block_info=None, 
+                 raw_input_signals=None):
         super().__init__(parent)
         self.setWindowTitle("Signal Viewer")
         self.setMinimumSize(400, 200)
@@ -933,16 +1001,19 @@ class SignalViewerDialog(QDialog):
         self.signals = {} if signals is None else signals  # Dict of {block_id: signal_data}
         self.time_array = np.linspace(0, 1, 1000) if time_array is None else time_array
         self.block_info = block_info or {}  # Dict of block information
+        self.raw_input_signals = raw_input_signals or {}  # Dict of raw input signals for each block
         
-        # Create output directory for plots
-        self.output_dir = "signal_plots"
+        # Create timestamp for this simulation run
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        
+        # Create a unique folder for this simulation run
+        self.output_dir = f"signal_plots/sim_{timestamp}"
         os.makedirs(self.output_dir, exist_ok=True)
         
         # Main layout
         layout = QVBoxLayout(self)
         
         # Information label
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.label = QLabel(f"Plots saved to {self.output_dir} directory")
         layout.addWidget(self.label)
         
@@ -961,19 +1032,51 @@ class SignalViewerDialog(QDialog):
             
             # Save plots for each signal
             for block_id, signal_data in self.signals.items():
-                # Create a unique filename
-                filename = f"{self.output_dir}/block_{block_id}_{timestamp}.png"
+                # Get block type and parameters for better naming
+                block_type = self.block_info.get(block_id, {}).get('type', "Unknown")
+                block_params = self.block_info.get(block_id, {}).get('params', {})
+                
+                # Create descriptive filename based on block type and parameters
+                param_info = ""
+                if block_type == 'Signal':
+                    freqs = block_params.get('frequencies', [])
+                    if freqs:
+                        param_info = f"{len(freqs)}freqs_{freqs[0]}Hz"
+                elif block_type == 'FAA':
+                    param_info = f"fc_{block_params.get('cutoff_frequency', 0)}Hz"
+                elif block_type == 'Clock':
+                    param_info = f"{block_params.get('frequency', 0)}Hz"
+                elif block_type == 'Noise':
+                    param_info = f"amp_{block_params.get('peak_to_peak', 1.0)}"
+                
+                # Create a unique and descriptive filename
+                if param_info:
+                    filename = f"{self.output_dir}/{block_type}_{param_info}.png"
+                else:
+                    filename = f"{self.output_dir}/{block_type}_{block_id[-6:]}.png"  # Use last 6 chars of ID
                 
                 # Create figure
                 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
                 
-                # Get block type if available, otherwise assume generic
-                block_type = self.block_info.get(block_id, {}).get('type', "Unknown")
-                block_params = self.block_info.get(block_id, {}).get('params', {})
+                # Plot time domain - output signal first
+                ax1.plot(self.time_array, signal_data, 'b-', linewidth=2.0, label='Output')
                 
-                # Plot time domain
-                ax1.plot(self.time_array, signal_data)
-                ax1.set_title(f"Block {block_id} - {block_type} - Time Domain")
+                # For S&H blocks, also plot the input signal as a dashed line
+                if block_type in ['S&H', 'A.Switch'] and block_id in self.raw_input_signals:
+                    # Get the original input signal (first one if multiple)
+                    if self.raw_input_signals[block_id]:
+                        input_signal = self.raw_input_signals[block_id][0]
+                        
+                        # Plot the full original input signal
+                        ax1.plot(self.time_array, input_signal, 
+                                'r--',        # Red dashed line
+                                linewidth=1.5, # Slightly thicker
+                                alpha=0.7,     # Semi-transparent
+                                label='Input')
+                        
+                        ax1.legend()
+                
+                ax1.set_title(f"{block_type} - Time Domain{' - ' + param_info if param_info else ''}")
                 ax1.set_xlabel("Time (s)")
                 ax1.set_ylabel("Amplitude")
                 ax1.grid(True)
@@ -1015,7 +1118,7 @@ class SignalViewerDialog(QDialog):
                             # Find index closest to display_time
                             idx = min(len(self.time_array), max(1, int(display_time / (self.time_array[1] - self.time_array[0]))))
                             ax1.set_xlim(0, self.time_array[idx-1])
-                            ax1.set_title(f"Block {block_id} - {block_type} (fc={block_params.get('cutoff_frequency', 'N/A')} Hz) - Time Domain")
+                            ax1.set_title(f"{block_type} (fc={block_params.get('cutoff_frequency', 'N/A')} Hz) - Time Domain")
                 
                 elif block_type == 'Clock':
                     # Show a few cycles for clock blocks too
@@ -1031,6 +1134,52 @@ class SignalViewerDialog(QDialog):
                         # Default view if error
                         pass
                 
+                elif block_type == 'S&H':
+                    # For S&H, show 3 cycles of the input signal (not the sampling frequency)
+                    try:
+                        # Find the fundamental frequency of the signal
+                        n = len(signal_data)
+                        fft_result = np.abs(np.fft.rfft(signal_data)) / n
+                        freqs = np.fft.rfftfreq(n, 1/44100)
+                        
+                        # Find significant peaks, excluding DC (first bin)
+                        peak_threshold = np.max(fft_result[1:]) * 0.1  # 10% of max non-DC
+                        peak_indices = np.where(fft_result[1:] > peak_threshold)[0] + 1  # Add 1 to account for skipping DC
+                        
+                        if len(peak_indices) > 0:
+                            # Find the lowest significant frequency peak (fundamental)
+                            sorted_peaks = sorted([(freqs[i], fft_result[i]) for i in peak_indices], key=lambda x: x[0])
+                            min_freq = sorted_peaks[0][0]
+                            
+                            # Make sure we have a reasonable frequency
+                            if min_freq < 10:  # If freq is too low, might be noise
+                                min_freq = 100  # Default to 100Hz
+                        else:
+                            # If no clear peaks, try to use connected clock info as fallback
+                            clock_freq = None
+                            for other_id, other_info in self.block_info.items():
+                                if other_info.get('type') == 'Clock' and other_id in block_info:
+                                    clock_freq = other_info.get('params', {}).get('frequency')
+                                    break
+                                    
+                            # Calculate a reasonable input frequency (half the clock is common)
+                            min_freq = clock_freq / 2 if clock_freq else 100  # Default to 100Hz
+                        
+                        # Calculate time to show 3 cycles of the input frequency
+                        period = 1.0 / min_freq
+                        display_time = 3 * period
+                        
+                        # Find index closest to display_time
+                        idx = min(len(self.time_array), max(1, int(display_time / (self.time_array[1] - self.time_array[0]))))
+                        ax1.set_xlim(0, self.time_array[idx-1])
+                        
+                        # Add annotation about input and sampling frequencies
+                        sampling_freq = clock_freq if 'clock_freq' in locals() else "unknown"
+                        ax1.set_title(f"{block_type} - Time Domain (Input={min_freq:.1f}Hz, Fs={sampling_freq}Hz){' - ' + param_info if param_info else ''}")
+                    except (IndexError, ZeroDivisionError, ValueError):
+                        # Default view if error
+                        pass
+                
                 # Compute and plot frequency domain (simple FFT)
                 if len(signal_data) > 0:
                     n = len(signal_data)
@@ -1039,7 +1188,7 @@ class SignalViewerDialog(QDialog):
                     
                     # Plot frequency domain with block-specific limits
                     ax2.plot(freqs, fft_result)
-                    ax2.set_title(f"Block {block_id} - {block_type} - Frequency Domain")
+                    ax2.set_title(f"{block_type} - Frequency Domain{' - ' + param_info if param_info else ''}")
                     ax2.set_xlabel("Frequency (Hz)")
                     ax2.set_ylabel("Magnitude")
                     ax2.grid(True)
@@ -1093,57 +1242,90 @@ class SignalViewerDialog(QDialog):
                         except (TypeError, ValueError):
                             # Default view if error
                             pass
-                            
+                    
                     elif block_type == 'S&H':
-                        # For S&H, zoom in to show the sampling effect clearly
-                        # Find highest peak in frequency domain after the fundamental
+                        # For S&H, show multiple replicas of the spectrum to visualize the sampling effect
                         try:
-                            peak_idx = np.argmax(fft_result[10:]) + 10  # Skip first few bins to avoid DC
-                            if peak_idx < len(freqs):
-                                highest_freq = freqs[peak_idx] * 2  # Show twice the highest significant frequency
-                                ax2.set_xlim(0, highest_freq)
+                            # Find corresponding clock block
+                            clock_freq = None
+                            # Look through all blocks to find connected clock
+                            for other_id, other_info in self.block_info.items():
+                                if other_info.get('type') == 'Clock' and other_id in block_info:
+                                    clock_freq = other_info.get('params', {}).get('frequency')
+                                    break
+                            
+                            if not clock_freq:
+                                # If no clock found, try to estimate from spectral content
+                                # Find peaks in the spectrum
+                                peak_indices = np.argsort(fft_result)[-10:]  # Get indices of top 10 peaks
+                                peak_freqs = [freqs[idx] for idx in peak_indices if idx < len(freqs)]
                                 
-                                # Mark the peak frequency
-                                ax2.axvline(x=freqs[peak_idx], color='r', linestyle='--', 
-                                           label=f'Peak: {freqs[peak_idx]:.1f} Hz')
-                                ax2.legend()
-                            else:
-                                ax2.set_xlim(0, 5000)  # Default range
+                                if peak_freqs:
+                                    # Try to find regular spacing between peaks (clock frequency)
+                                    peak_diffs = np.diff(sorted(peak_freqs))
+                                    if len(peak_diffs) > 0:
+                                        # Use the most common difference as estimate of clock frequency
+                                        clock_freq = np.median(peak_diffs)
+                                    else:
+                                        clock_freq = 1000  # Default
+                                else:
+                                    clock_freq = 1000  # Default
+                            
+                            # Show 4x the clock frequency to see multiple replicas
+                            ax2.set_xlim(0, clock_freq * 4.5)
+                            
+                            # Draw vertical lines at the clock frequency and its multiples
+                            for i in range(1, 5):
+                                harmonic = clock_freq * i
+                                if i == 1:
+                                    ax2.axvline(x=harmonic, color='r', linestyle='--', 
+                                               label=f'Clock: {harmonic:.1f} Hz')
+                                else:
+                                    ax2.axvline(x=harmonic, color='g', linestyle=':', 
+                                               alpha=0.7, label=f'{i}×Clock: {harmonic:.1f} Hz')
+                            
+                            # Sinc envelope visualization is removed, but processing is still applied
+                            
+                            ax2.legend()
+                            ax2.set_title(f"{block_type} - Frequency Domain (with spectral replicas){' - ' + param_info if param_info else ''}")
                         except (IndexError, ValueError):
                             ax2.set_xlim(0, 5000)  # Default range
                     
                     elif block_type == 'A.Switch':
-                        # For A.Switch, similar to S&H but might have different spectral characteristics
+                        # For A.Switch, show 3 cycles of the input signal's minimum frequency
                         try:
-                            peak_idx = np.argmax(fft_result[10:]) + 10
-                            if peak_idx < len(freqs):
-                                highest_freq = freqs[peak_idx] * 3  # Show more of the spectrum for switches
-                                ax2.set_xlim(0, highest_freq)
-                                
-                                # Mark the peak frequency
-                                ax2.axvline(x=freqs[peak_idx], color='r', linestyle='--', 
-                                           label=f'Peak: {freqs[peak_idx]:.1f} Hz')
-                                ax2.legend()
-                            else:
-                                ax2.set_xlim(0, 7000)  # Default range
-                        except (IndexError, ValueError):
-                            ax2.set_xlim(0, 7000)  # Default range
-                    
-                    elif block_type == 'Noise':
-                        # For Noise blocks, show a wide spectrum
-                        try:
-                            # Show up to Nyquist frequency (half of sampling rate)
-                            nyquist = 44100 / 2  # Assuming 44.1 kHz sampling rate
-                            ax2.set_xlim(0, nyquist)
-                            
-                            # Add peak-to-peak annotation
-                            peak_to_peak = block_params.get('peak_to_peak', 1.0)
-                            ax2.set_title(f"Block {block_id} - {block_type} (Amp={peak_to_peak}) - Frequency Domain")
-                            
-                            # In time domain, show appropriate amplitude range
-                            ax1.set_ylim(-peak_to_peak/2, peak_to_peak/2)
-                            ax1.set_title(f"Block {block_id} - {block_type} (Amp={peak_to_peak}) - Time Domain")
-                        except (TypeError, ValueError):
+                            # Find the fundamental frequency of the input signal
+                            if block_id in self.raw_input_signals:
+                                input_signal = self.raw_input_signals[block_id][0]  # Use the first input signal
+                                n = len(input_signal)
+                                fft_result = np.abs(np.fft.rfft(input_signal)) / n
+                                freqs = np.fft.rfftfreq(n, 1/44100)
+
+                                # Find significant peaks, excluding DC (first bin)
+                                peak_threshold = np.max(fft_result[1:]) * 0.1  # 10% of max non-DC
+                                peak_indices = np.where(fft_result[1:] > peak_threshold)[0] + 1  # Add 1 to account for skipping DC
+
+                                if len(peak_indices) > 0:
+                                    # Find the lowest significant frequency peak (fundamental)
+                                    sorted_peaks = sorted([(freqs[i], fft_result[i]) for i in peak_indices], key=lambda x: x[0])
+                                    min_freq = sorted_peaks[0][0]
+
+                                    # Make sure we have a reasonable frequency
+                                    if min_freq < 10:  # If freq is too low, might be noise
+                                        min_freq = 100  # Default to 100Hz
+                                    else:
+                                        min_freq = 100  # Default to 100Hz
+
+                                # Calculate time to show 3 cycles of the input frequency
+                                period = 1.0 / min_freq
+                                display_time = 3 * period
+
+                                # Find index closest to display_time
+                                idx = min(len(self.time_array), max(1, int(display_time / (self.time_array[1] - self.time_array[0]))))
+                                ax1.set_xlim(0, self.time_array[idx-1])
+
+                                ax1.set_title(f"{block_type} - Time Domain (Input={min_freq:.1f}Hz){' - ' + param_info if param_info else ''}")
+                        except (IndexError, ZeroDivisionError, ValueError):
                             # Default view if error
                             pass
                     
@@ -1180,6 +1362,24 @@ class SignalViewerDialog(QDialog):
                             # Default view if error
                             pass
                     
+                    elif block_type == 'Noise':
+                        # For Noise blocks, show a wide spectrum
+                        try:
+                            # Show up to Nyquist frequency (half of sampling rate)
+                            nyquist = 44100 / 2  # Assuming 44.1 kHz sampling rate
+                            ax2.set_xlim(0, nyquist)
+                            
+                            # Add peak-to-peak annotation
+                            peak_to_peak = block_params.get('peak_to_peak', 1.0)
+                            ax2.set_title(f"{block_type} (Amp={peak_to_peak}) - Frequency Domain{' - ' + param_info if param_info else ''}")
+                            
+                            # In time domain, show appropriate amplitude range
+                            ax1.set_ylim(-peak_to_peak/2, peak_to_peak/2)
+                            ax1.set_title(f"{block_type} (Amp={peak_to_peak}) - Time Domain{' - ' + param_info if param_info else ''}")
+                        except (TypeError, ValueError):
+                            # Default view if error
+                            pass
+                    
                     else:
                         # Generic display for other block types
                         # Limit to a reasonable range (e.g., 10 kHz)
@@ -1189,7 +1389,7 @@ class SignalViewerDialog(QDialog):
                 plt.savefig(filename)
                 plt.close(fig)
                 
-                file_list_text += f"Block {block_id} ({block_type}): {filename}\n"
+                file_list_text += f"{block_type} {param_info}: {os.path.basename(filename)}\n"
             
             # Show list of generated files
             self.file_list.setText(file_list_text)
@@ -1241,6 +1441,17 @@ class NoiseConfigDialog(QDialog):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    
+    # Create and display the splash screen with a further scaled logo
+    splash_pix = QPixmap('AppLogo.png')
+    splash_pix = splash_pix.scaled(splash_pix.width() // 4, splash_pix.height() // 4, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+    splash = QSplashScreen(splash_pix)
+    splash.show()
+    
+    # Create the main window
     window = MainWindow()
-    window.show()
+    
+    # Set up a timer to close the splash screen and show the main window
+    QTimer.singleShot(3000, lambda: (splash.close(), window.show()))  # 3000 ms = 3 seconds
+    
     sys.exit(app.exec())

@@ -1,17 +1,30 @@
 * C:\users\vito\Documents\facu\4y\1Q\tps\assd\tp1\spice\ckt_tp1.asc
 R1 N002 Vn 3k
 R69 N002 Vp 5k
-XU4 Vp Vn 0 supply Vp=6 Vn=6
+XU4 Vp Vn 0 supply Vp=5 Vn=5
 XU3 N002 trian Vp Vn CLK 0 LM311/TI
 R8 Vp CLK 4k7
 XU2 N003 trian Vp Vn N001 TL082
 R5 N003 0 10k
 R9 N001 N003 11k6
-R10 N001 trian {rv}
+R10 N001 trian 600
 C2 trian 0 10n IC=1
+XU1 CLK nCLK Vp 0 inv2
+XU5 sgn_in CLK 0 Vn P001 sgn_snh Vp LF398H
+V1 sgn_in 0 SINE(0 2 10k)
+C1 P001 0 1n
+XU6 N004 sng_nat nCLK Vp Vn 54HC4016
+R2 N004 sgn_snh 100m
+R3 sgn_snh 0 10k
+C3 sgn_snh 0 1p
+R4 sng_nat 0 10k
+C4 sng_nat 0 1p
 .tran 0 1m 200u 10u
 * .ac dec 1000 10k 100k
-.step param rv 455 800 120
+* .step param rv 455 800 120
+.lib C:\users\vito\Documents\LTspice\Libraries\ana_swit.lib
+.lib C:\users\vito\Documents\LTspice\Libraries\LTSpiceASSDLib.lib
+.lib HC_TNOMI.CIR
 .lib TCLib/LM311.lib
 .lib TCLib/supply.lib
 .lib TCLib/TL082.lib

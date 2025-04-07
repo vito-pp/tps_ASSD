@@ -156,9 +156,6 @@ class Block(QGraphicsItem):
             self.output_ports.append(Port(self, self.width, self.height/2, False))
         elif block_type == 'Signal':
             self.output_ports.append(Port(self, self.width, self.height/2, False))
-        elif block_type == 'FR':
-            self.input_ports.append(Port(self, 0, self.height/2, True))
-            self.output_ports.append(Port(self, self.width, self.height/2, False))
         elif block_type == 'A.Switch':
             self.input_ports.append(Port(self, 0, self.height/2, True))
             self.output_ports.append(Port(self, self.width, self.height/2, False))
@@ -590,7 +587,6 @@ class MainWindow(QMainWindow):
         self.add_block_button(toolbar, "S&H", "Sample and Hold")
         self.add_block_button(toolbar, "Clock", "Clock Generator")
         self.add_block_button(toolbar, "Signal", "Signal Generator")
-        self.add_block_button(toolbar, "FR", "Frequency Response")
         self.add_block_button(toolbar, "A.Switch", "Analog Switch")
         self.add_block_button(toolbar, "Adder", "Adder")
         self.add_block_button(toolbar, "Noise", "Noise")
@@ -744,6 +740,24 @@ class MainWindow(QMainWindow):
                         else:
                             # If no input signal, use zeros
                             output_signals[block.id] = np.zeros_like(time_array)
+                    
+                    elif block.block_type == 'FR':
+                        # Process FR block (same as FAA)
+                        if input_signal is not None:
+                            # Get FR parameters from block
+                            fc = block.filter_params.get('cutoff_frequency', 1000)  # Default cutoff frequency
+                            print(f"Applying FR filter with fc={fc} Hz")
+                            # Convert to frequency domain
+                            signal_fft = np.fft.rfft(input_signal)
+                            # Calculate frequency bins
+                            freqs = np.fft.rfftfreq(len(input_signal), 1/44100)  # Use default sampling rate
+                            # Apply filter
+                            signal_fft[freqs > fc] = 0
+                            # Convert back to time domain
+                            return np.fft.irfft(signal_fft, len(input_signal))
+                        else:
+                            # If no input signal, use zeros
+                            return np.zeros_like(input_signal)
                     
                     elif block.block_type in ['S&H', 'A.Switch']:
                         # Process Sample & Hold or Analog Switch

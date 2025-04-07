@@ -186,7 +186,8 @@ class Block(QGraphicsItem):
         elif self.block_type == 'Clock':
             self.clock_params = {
                 "frequency": 1000,
-                "duty_cycle": 50
+                "duty_cycle": 50,
+                "phase": 0
             }
             self.output_signal = None
         elif self.block_type == 'S&H':
@@ -253,9 +254,10 @@ class Block(QGraphicsItem):
         if self.block_type == 'Clock':
             freq = self.clock_params["frequency"]
             duty = self.clock_params["duty_cycle"] / 100.0
+            phase = self.clock_params["phase"] * np.pi / 180.0  # Convert to radians
             period = 1.0 / freq
-            # Create square wave
-            return np.where((t % period) / period < duty, 1.0, 0.0)
+            # Create square wave with phase offset
+            return np.where(((t % period) / period + phase / (2 * np.pi)) % 1.0 < duty, 1.0, 0.0)
         
         # Default return empty signal
         return np.zeros_like(t)
@@ -455,6 +457,26 @@ class CustomGraphicsView(QGraphicsView):
         self.current_connection = None
         self.start_port = None
         
+        # Set viewport update mode to ensure proper clearing
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        
+        # Set background color to very light gray
+        self.setBackgroundBrush(QBrush(QColor(240, 240, 240)))
+        
+        # Enable optimizations
+        self.setOptimizationFlags(
+            QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing |
+            QGraphicsView.OptimizationFlag.DontSavePainterState
+        )
+        
+        # Enable caching
+        self.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+        
+    def drawBackground(self, painter, rect):
+        # Fill background with solid color
+        painter.fillRect(rect, self.backgroundBrush())
+        super().drawBackground(painter, rect)
+        
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             pos = self.mapToScene(event.pos())
@@ -612,7 +634,30 @@ class MainWindow(QMainWindow):
         action.triggered.connect(lambda: self.add_block(block_type))
         
     def add_block(self, block_type):
-        block = Block(block_type, 0, 0)
+        # Get the center point of the view in scene coordinates
+        view_center = self.view.mapToScene(self.view.viewport().rect().center())
+        
+        # Define the search area for existing blocks (100x100 rectangle around center)
+        search_rect = QRectF(view_center.x() - 50, view_center.y() - 50, 100, 100)
+        
+        # Check if there are any blocks in the center area
+        blocks_in_center = [item for item in self.scene.items(search_rect) 
+                          if isinstance(item, Block)]
+        
+        if blocks_in_center:
+            # Center is occupied, create block with offset
+            # Calculate offset based on number of existing blocks
+            num_blocks = len(blocks_in_center)
+            offset_x = 120 * (num_blocks % 3 - 1)  # -120, 0, or 120
+            offset_y = 80 * ((num_blocks // 3) % 3 - 1)  # -80, 0, or 80
+            
+            # Create block at offset position
+            block = Block(block_type, view_center.x() + offset_x - 50, 
+                        view_center.y() + offset_y - 30)
+        else:
+            # Center is free, create block at center
+            block = Block(block_type, view_center.x() - 50, view_center.y() - 30)
+        
         self.scene.addItem(block)
     
     def run_simulation(self):
@@ -966,7 +1011,7 @@ class ClockConfigDialog(QDialog):
     def __init__(self, parent=None, clock_params=None):
         super().__init__(parent)
         self.setWindowTitle("Configure Clock Generator")
-        self.clock_params = clock_params or {"frequency": 1000, "duty_cycle": 50}
+        self.clock_params = clock_params or {"frequency": 1000, "duty_cycle": 50, "phase": 0}
         
         layout = QVBoxLayout(self)
         
@@ -986,6 +1031,13 @@ class ClockConfigDialog(QDialog):
         self.duty_spin.setValue(self.clock_params["duty_cycle"])
         form_layout.addRow("Duty cycle:", self.duty_spin)
         
+        # Phase
+        self.phase_spin = QDoubleSpinBox()
+        self.phase_spin.setRange(0, 360)
+        self.phase_spin.setSuffix(" °")
+        self.phase_spin.setValue(self.clock_params["phase"])
+        form_layout.addRow("Phase:", self.phase_spin)
+        
         layout.addLayout(form_layout)
         
         # Buttons
@@ -1001,7 +1053,8 @@ class ClockConfigDialog(QDialog):
     def get_parameters(self):
         return {
             "frequency": self.freq_spin.value(),
-            "duty_cycle": self.duty_spin.value()
+            "duty_cycle": self.duty_spin.value(),
+            "phase": self.phase_spin.value()
         }
 
 class SignalViewerDialog(QDialog):
@@ -1362,16 +1415,44 @@ class SignalViewerDialog(QDialog):
                             else:
                                 ax2.set_xlim(0, 10000)  # Default range
                             
-                            # In time domain, try to show at least a few cycles
-                            if len(peak_indices) > 0 and peak_indices[0] > 0:
-                                # Use the strongest frequency component to set time view
-                                strongest_freq = freqs[peak_indices[-1]] if peak_indices[-1] < len(freqs) else 1000
-                                if strongest_freq > 0:
-                                    # Show 3 cycles of the strongest frequency
-                                    period = 1.0 / strongest_freq
-                                    display_time = 3 * period
+                            # In time domain, show four cycles of the lowest frequency from both inputs
+                            if block_id in self.raw_input_signals:
+                                # Get both input signals
+                                input_signals = self.raw_input_signals[block_id]
+                                
+                                # Find the lowest frequency in each input signal
+                                min_freqs = []
+                                for input_signal in input_signals:
+                                    if input_signal is not None:
+                                        n = len(input_signal)
+                                        fft_result = np.abs(np.fft.rfft(input_signal)) / n
+                                        freqs = np.fft.rfftfreq(n, 1/44100)
+                                        
+                                        # Find significant peaks, excluding DC (first bin)
+                                        peak_threshold = np.max(fft_result[1:]) * 0.1  # 10% of max non-DC
+                                        peak_indices = np.where(fft_result[1:] > peak_threshold)[0] + 1
+                                        
+                                        if len(peak_indices) > 0:
+                                            # Find the lowest significant frequency peak
+                                            sorted_peaks = sorted([(freqs[i], fft_result[i]) for i in peak_indices], key=lambda x: x[0])
+                                            min_freq = sorted_peaks[0][0]
+                                            
+                                            # Make sure we have a reasonable frequency
+                                            if min_freq >= 10:  # Only consider frequencies above 10 Hz
+                                                min_freqs.append(min_freq)
+                                
+                                if min_freqs:
+                                    # Use the lowest frequency among all inputs
+                                    lowest_freq = min(min_freqs)
+                                    period = 1.0 / lowest_freq
+                                    # Show 4 cycles
+                                    display_time = 4 * period
+                                    # Find index closest to display_time
                                     idx = min(len(self.time_array), max(1, int(display_time / (self.time_array[1] - self.time_array[0]))))
                                     ax1.set_xlim(0, self.time_array[idx-1])
+                                    
+                                    # Add annotation about the frequency
+                                    ax1.set_title(f"{block_type} - Time Domain (4 cycles of {lowest_freq:.1f}Hz){' - ' + param_info if param_info else ''}")
                         except (IndexError, ZeroDivisionError, ValueError):
                             # Default view if error
                             pass

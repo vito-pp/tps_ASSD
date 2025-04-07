@@ -1,31 +1,46 @@
 LTspice 24.0.12 for Windows
 Circuit: * C:\users\vito\Documents\facu\4y\1Q\tps\labo3\practica1\spice\SnH.asc
-Start Time: Sat Apr  5 10:53:09 2025
+Start Time: Mon Apr  7 00:38:57 2025
 solver = Normal
 Maximum thread count: 8
 tnom = 27
 temp = 27
 method = modified trap
+WARNING: Node NC_04 is floating.
+
+WARNING: Less than two connections to node nc_01.  This node is used by v:u6:i1.
+WARNING: Less than two connections to node nc_04.  This node is used by s:u6:.
 Direct Newton iteration failed to find .op point.  (Use ".option noopiter" to skip.)
 Starting Gmin stepping
-Increasing initial diagonal Gmin to 100
-Gmin = 100
+Gmin = 10
 vernier = 0.5
 vernier = 0.25
-Gmin = 30.8405
 vernier = 0.125
+Gmin = 5.35425
 vernier = 0.0625
 vernier = 0.03125
 vernier = 0.015625
-Gmin = 29.7895
 vernier = 0.0078125
+Gmin = 5.15175
 vernier = 0.00390625
 vernier = 0.00195312
 vernier = 0.000976562
-Gmin = 29.8549
 vernier = 0.000488281
+Gmin = 5.14045
+Singular matrix:  Check node u6:11
+   Iteration No. 7
 Gmin = 0
-Gmin stepping succeeded in finding the operating point.
+Singular matrix:  Check node u6:11
+   Iteration No. 1
+Gmin stepping failed
 
-Total elapsed time: 13.406 seconds.
+Starting source stepping with srcstepmethod=0
+Source Step = 3.0303%
+Source Step = 33.3333%
+Source Step = 63.6364%
+Source Step = 93.9394%
+Source stepping succeeded in finding the operating point.
+
+Heightened Def Con from 0.000861721 to 0.000861721
+Total elapsed time: 49.226 seconds.
 

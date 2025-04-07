@@ -1,0 +1,19 @@
+* C:\users\vito\Documents\facu\4y\1Q\tps\assd\tp1\spice\ckt_tp1.asc
+R1 N002 Vn 3k
+R69 N002 Vp 5k
+XU4 Vp Vn 0 supply Vp=6 Vn=6
+XU3 N002 trian Vp Vn CLK 0 LM311/TI
+R8 Vp CLK 4k7
+XU2 N003 trian Vp Vn N001 TL082
+R5 N003 0 10k
+R9 N001 N003 11k6
+R10 N001 trian {rv}
+C2 trian 0 10n IC=1
+.tran 0 1m 200u 10u
+* .ac dec 1000 10k 100k
+.step param rv 455 800 120
+.lib TCLib/LM311.lib
+.lib TCLib/supply.lib
+.lib TCLib/TL082.lib
+.backanno
+.end

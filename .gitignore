@@ -21,8 +21,8 @@ build/
 .env
 
 #LTspice
-.op.raw
-.raw
-.log
-.fft
-.net 
+*.op.raw
+*.raw
+*.log
+*.fft
+*.net 

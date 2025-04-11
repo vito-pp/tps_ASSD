@@ -1,0 +1,37 @@
+Added Component: Designator=P?(JST-B3P-VH(LF)(SN)-3_V)
+Add component (AddParameter): Name = "ComponentLink1Description"; Value = "Manufacturer URL"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink1URL"; Value = "http://www.jst.com/home2.html"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2Description"; Value = "Datasheet"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2URL"; Value = "http://www.jst-mfg.com/product/pdf/eng/eVH.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "DatasheetVersion"; Value = "May-16"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Male Header, Pitch 3.96 mm, 1 x 3 Position, Height 10.9 mm, Tail Length 3.7 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "B3P-VH(LF)(SN)"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=+5 Pin=P?-1
+Added Pin To Net: NetName=GND Pin=P?-2
+Added Pin To Net: NetName=-5 Pin=P?-3
+Added Member To Class: ClassName=PCB_tp1 Member=Component P? B3P-VH(LF)(SN)
+Added Member To Class: ClassName=PCB_tp1 Member=Component R13 1k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R15 820
+Added Member To Class: ClassName=PCB_tp1 Member=Component R17 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R21 3.3Meg
+Added Member To Class: ClassName=PCB_tp1 Member=Component R23 330k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R25 2k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R26 4k7
+Added Member To Class: ClassName=PCB_tp1 Member=Component R27 1k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R28 1k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R29 1k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R31 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R32 8k2
+Added Member To Class: ClassName=PCB_tp1 Member=Component R34 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R35 15k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R36 680
+Added Member To Class: ClassName=PCB_tp1 Member=Component R37 680
+Added Member To Class: ClassName=PCB_tp1 Member=Component R39 820
+Added Member To Class: ClassName=PCB_tp1 Member=Component R40 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R41 1200
+Added Member To Class: ClassName=PCB_tp1 Member=Component R44 1k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R48 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R49 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R51 10k
+Added Member To Class: ClassName=PCB_tp1 Member=Component R52 3.3Meg
+Added Member To Class: ClassName=PCB_tp1 Member=Component R53 56k

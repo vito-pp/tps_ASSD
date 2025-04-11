@@ -1,0 +1,128 @@
+Removed Pin From Net: NetName=NetC2_1 Pin=R27-1
+Removed Pin From Net: NetName=NetR18_2 Pin=R27-2
+Removed Pin From Net: NetName=NetC10_1 Pin=R53-1
+Removed Pin From Net: NetName=NetR46_2 Pin=R53-2
+Removed Member From Class: ClassName=PCB_tp1 Member=R55
+Removed Member From Class: ClassName=PCB_tp1 Member=R56
+Change Component Comment : Designator=R1 Old Comment=1k New Comment=8k2
+Change Component Comment : Designator=C1 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C2 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C3 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C4 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C5 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C6 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C7 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C8 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C9 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C10 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C11 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C12 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C13 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=C14 Old Comment=CAP New Comment=10n
+Change Component Comment : Designator=R56 Old Comment=POTENCIOMETRO New Comment=1k
+Change Component Comment : Designator=R54 Old Comment=POTENCIOMETRO New Comment=2k
+Change Component Comment : Designator=R55 Old Comment=PRESET New Comment=1k
+Change Component Comment : Designator=R23 Old Comment=RES New Comment=1k
+Change Component Comment : Designator=R42 Old Comment=RES New Comment=1k
+Change Component Comment : Designator=R24 Old Comment=RES New Comment=3.3Meg
+Change Component Comment : Designator=R50 Old Comment=RES New Comment=3.3Meg
+Change Component Comment : Designator=R20 Old Comment=RES New Comment=4k7
+Change Component Comment : Designator=R30 Old Comment=RES New Comment=8k2
+Change Component Comment : Designator=R3 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R10 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R18 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R19 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R21 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R22 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R28 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R29 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R32 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R38 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R46 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R47 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R48 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R49 Old Comment=RES New Comment=10k
+Change Component Comment : Designator=R4 Old Comment=RES New Comment=15k
+Change Component Comment : Designator=R33 Old Comment=RES New Comment=15k
+Change Component Comment : Designator=R17 Old Comment=RES New Comment=18k
+Change Component Comment : Designator=R45 Old Comment=RES New Comment=18k
+Change Component Comment : Designator=R25 Old Comment=RES New Comment=56k
+Change Component Comment : Designator=R51 Old Comment=RES New Comment=56k
+Change Component Comment : Designator=R13 Old Comment=RES New Comment=220
+Change Component Comment : Designator=R26 Old Comment=RES New Comment=330k
+Change Component Comment : Designator=R52 Old Comment=RES New Comment=330k
+Change Component Comment : Designator=R5 Old Comment=RES New Comment=680
+Change Component Comment : Designator=R6 Old Comment=RES New Comment=680
+Change Component Comment : Designator=R34 Old Comment=RES New Comment=680
+Change Component Comment : Designator=R35 Old Comment=RES New Comment=680
+Change Component Comment : Designator=R8 Old Comment=RES New Comment=820
+Change Component Comment : Designator=R16 Old Comment=RES New Comment=820
+Change Component Comment : Designator=R37 Old Comment=RES New Comment=820
+Change Component Comment : Designator=R44 Old Comment=RES New Comment=820
+Change Component Comment : Designator=R2 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R7 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R9 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R15 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R31 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R36 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R39 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R43 Old Comment=RES New Comment=1200
+Change Component Comment : Designator=R11 Old Comment=RES New Comment=1800
+Change Component Comment : Designator=R12 Old Comment=RES New Comment=1800
+Change Component Comment : Designator=R40 Old Comment=RES New Comment=1800
+Change Component Comment : Designator=R41 Old Comment=RES New Comment=1800
+Change Component Designator: OldDesignator=R13 NewDesignator=R24
+Change Component Designator: OldDesignator=R14 NewDesignator=R13
+Change Component Designator: OldDesignator=R15 NewDesignator=R14
+Change Component Designator: OldDesignator=R16 NewDesignator=R15
+Change Component Designator: OldDesignator=R17 NewDesignator=R16
+Change Component Designator: OldDesignator=R18 NewDesignator=R17
+Change Component Designator: OldDesignator=R19 NewDesignator=R18
+Change Component Designator: OldDesignator=R20 NewDesignator=R26
+Change Component Designator: OldDesignator=R21 NewDesignator=R19
+Change Component Designator: OldDesignator=R22 NewDesignator=R20
+Change Component Designator: OldDesignator=R23 NewDesignator=R29
+Change Component Designator: OldDesignator=R24 NewDesignator=R21
+Change Component Designator: OldDesignator=R25 NewDesignator=R22
+Change Component Designator: OldDesignator=R26 NewDesignator=R23
+Change Component Designator: OldDesignator=R28 NewDesignator=R30
+Change Component Designator: OldDesignator=R29 NewDesignator=R31
+Change Component Designator: OldDesignator=R30 NewDesignator=R32
+Change Component Designator: OldDesignator=R31 NewDesignator=R33
+Change Component Designator: OldDesignator=R32 NewDesignator=R34
+Change Component Designator: OldDesignator=R33 NewDesignator=R35
+Change Component Designator: OldDesignator=R34 NewDesignator=R36
+Change Component Designator: OldDesignator=R35 NewDesignator=R37
+Change Component Designator: OldDesignator=R36 NewDesignator=R38
+Change Component Designator: OldDesignator=R37 NewDesignator=R39
+Change Component Designator: OldDesignator=R38 NewDesignator=R40
+Change Component Designator: OldDesignator=R39 NewDesignator=R41
+Change Component Designator: OldDesignator=R40 NewDesignator=R42
+Change Component Designator: OldDesignator=R41 NewDesignator=R43
+Change Component Designator: OldDesignator=R42 NewDesignator=R44
+Change Component Designator: OldDesignator=R43 NewDesignator=R45
+Change Component Designator: OldDesignator=R44 NewDesignator=R46
+Change Component Designator: OldDesignator=R45 NewDesignator=R47
+Change Component Designator: OldDesignator=R46 NewDesignator=R48
+Change Component Designator: OldDesignator=R47 NewDesignator=R49
+Change Component Designator: OldDesignator=R48 NewDesignator=R50
+Change Component Designator: OldDesignator=R49 NewDesignator=R51
+Change Component Designator: OldDesignator=R50 NewDesignator=R52
+Change Component Designator: OldDesignator=R51 NewDesignator=R53
+Change Component Designator: OldDesignator=R52 NewDesignator=R54
+Change Component Designator: OldDesignator=R54 NewDesignator=R25
+Change Component Designator: OldDesignator=R55 NewDesignator=R27
+Change Component Designator: OldDesignator=R56 NewDesignator=R28
+Change Net Name : Old Net Name=NetR13_1 New Net Name=NetR24_1
+Change Net Name : Old Net Name=NetR17_2 New Net Name=NetR16_2
+Change Net Name : Old Net Name=NetR18_2 New Net Name=NetR17_2
+Change Net Name : Old Net Name=NetR19_1 New Net Name=NetR18_1
+Change Net Name : Old Net Name=NetR23_1 New Net Name=NetR28_2
+Change Net Name : Old Net Name=NetR28_1 New Net Name=NetR30_1
+Change Net Name : Old Net Name=NetR28_2 New Net Name=NetR25_2
+Change Net Name : Old Net Name=NetR30_2 New Net Name=NetR32_2
+Change Net Name : Old Net Name=NetR34_2 New Net Name=NetR36_2
+Change Net Name : Old Net Name=NetR45_1 New Net Name=NetR47_1
+Change Net Name : Old Net Name=NetR46_2 New Net Name=NetR48_2
+Change Net Name : Old Net Name=NetR47_1 New Net Name=NetR49_1
+Change Net Name : Old Net Name=NetR55_2 New Net Name=NetR27_2

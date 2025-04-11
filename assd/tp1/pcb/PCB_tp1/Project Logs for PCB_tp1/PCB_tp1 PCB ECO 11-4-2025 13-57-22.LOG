@@ -1,0 +1,13 @@
+Change Component Designator: OldDesignator=  NewDesignator=R30
+Added Component: Designator=Pnuevo(JST-B3P-VH(LF)(SN)-3_V)
+Add component (AddParameter): Name = "ComponentLink1Description"; Value = "Manufacturer URL"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink1URL"; Value = "http://www.jst.com/home2.html"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2Description"; Value = "Datasheet"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "ComponentLink2URL"; Value = "http://www.jst-mfg.com/product/pdf/eng/eVH.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "DatasheetVersion"; Value = "May-16"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Male Header, Pitch 3.96 mm, 1 x 3 Position, Height 10.9 mm, Tail Length 3.7 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "B3P-VH(LF)(SN)"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=+5 Pin=Pnuevo-1
+Added Pin To Net: NetName=GND Pin=Pnuevo-2
+Added Pin To Net: NetName=-5 Pin=Pnuevo-3
+Added Member To Class: ClassName=PCB_tp1 Member=Component Pnuevo B3P-VH(LF)(SN)

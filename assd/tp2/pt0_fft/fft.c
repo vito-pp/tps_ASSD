@@ -71,6 +71,11 @@ void fft(complex float *in, complex float *out, size_t n)
             }
         }
     }
+    // normalizing the gain
+    for (size_t i = 0; i < n; i++)
+    {
+        out[i] /= (complex float)n;
+    }
 
     free(W);
 }

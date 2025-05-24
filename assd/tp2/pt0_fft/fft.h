@@ -1,7 +1,7 @@
 /**
  * @file fft.h
  * @brief Implementation of the Radix-2 decimation in time Cooley-Tukey FFT 
- * algorithm for ASSD
+ * algorithm with normalized output for ASSD
  * @authors Grupo 3
  */
 

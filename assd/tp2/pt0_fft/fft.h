@@ -12,7 +12,8 @@
 #include <complex.h>
 
 /**
- * @brief Computes the FFT of a complex array
+ * @brief Computes the FFT of a complex array. Normalized gain as 1/n. 
+ * If in = out, then the in array is overwritten with its DFT
  * 
  * @param in Complex float pointer to an input array of lenght n which 
  *              represents a time domain signal

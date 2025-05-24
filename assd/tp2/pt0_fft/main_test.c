@@ -12,5 +12,13 @@ int main(void)
     fft(in, out, N);
 
     for (size_t i = 0; i < N; i++)
-        printf("%.6lf%+.6lfi\n", creal(out[i]), cimag(out[i]));
+        printf("X(%zu) = %.6lf%+.6lfi\n", i, creal(out[i]), cimag(out[i]));
+
+    // if want to test in = out, try:
+    /*
+        fft(in, in, N);
+
+        for (size_t i = 0; i < N; i++)
+            printf("X(%zu) = %.6lf%+.6lfi\n", i, creal(in[i]), cimag(in[i]));
+    */
 }

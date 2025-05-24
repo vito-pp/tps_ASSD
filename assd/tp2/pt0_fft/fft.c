@@ -9,6 +9,24 @@ const double PI = 3.141592653589793;
 
 static bool isPowerOf2(size_t n){ return (n & (n - 1)) == 0; }
 
+// bit reverse ordering. writes the bit reverse on the out array so the in 
+// array remains untouched
+static void bitReverse(const complex float *in, complex float *out, size_t n) 
+{
+    size_t j = 0;
+    for (size_t i = 0; i < n; ++i) 
+    {
+        out[j] = in[i];
+        size_t bit = n >> 1;
+        while (j & bit) 
+        {
+            j ^= bit;
+            bit >>= 1;
+        }
+        j |= bit;
+    }
+}
+
 void fft(complex float *in, complex float *out, size_t n)
 {
     // validation 
@@ -17,25 +35,32 @@ void fft(complex float *in, complex float *out, size_t n)
         fprintf(stderr, "n is not a power of 2. Returning...");
         return;
     }
-        
-    // bit reverse ordering. writes the bit reverse on the out array so the in 
-    // array remains untouched
-    size_t bits = 0;
-    for (size_t temp = n; temp > 1; temp >>= 1) 
-    {
-        bits++;
-    }
-    for (size_t i = 0; i < n; i++) 
-    {
-        size_t rev = 0;
-        for (size_t b = 0; b < bits; b++) 
+
+    // reorder input by bit reversal
+    if (in != out) {
+        bitReverse(in, out, n);
+    } else {
+        // in-place (if in = out): need temp array for bit reversal
         {
-            if (i & (1u << b)) 
+            size_t bits = 0;
+            for (size_t temp = n; temp > 1; temp >>= 1) 
+                bits++;
+            for (size_t i = 0; i < n; i++) 
             {
-                rev |= 1u << (bits - 1 - b);
+                size_t rev = 0;
+                for (size_t b = 0; b < bits; b++) 
+                {
+                    if (i & (1u << b)) 
+                        rev |= 1u << (bits - 1 - b);
+                }
+                if (i < rev) 
+                {
+                    complex float t = out[i];
+                    out[i]          = out[rev];
+                    out[rev]        = t;
+                }
             }
         }
-        out[rev] = in[i];
     }
 
     // precomputes the twiddle factors
@@ -51,7 +76,7 @@ void fft(complex float *in, complex float *out, size_t n)
         float angle = -2.0f * PI * k / (float)n;
         W[k] = cosf(angle) + I * sinf(angle);
     }
-
+    
     // FFT
     for (size_t len = 2; len <= n; len <<= 1) 
     {
@@ -63,9 +88,9 @@ void fft(complex float *in, complex float *out, size_t n)
         {
             for (size_t j = 0; j < half; j++) 
             {
+                // FFT equations
                 complex float u = out[i + j];
                 complex float v = W[j * step] * out[i + j + half];
-                // FFT equations
                 out[i + j]           = u + v;
                 out[i + j + half]    = u - v;
             }

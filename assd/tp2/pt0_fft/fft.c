@@ -49,6 +49,7 @@ void fft(complex float *in, complex float *out, size_t n)
             {
                 complex float u = out[i + j];
                 complex float v = w * out[i + j + (len >> 1)];
+                // the FFT recursive equations
                 out[i + j]             = u + v;
                 out[i + j + (len >> 1)] = u - v;
                 w *= wlen;

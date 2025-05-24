@@ -22,7 +22,6 @@
  *              power of 2 
  * @return void
  */
-
 void fft(complex float *in, complex float *out, size_t n);
 
 #endif // FFT_H

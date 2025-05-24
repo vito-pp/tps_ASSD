@@ -5,6 +5,7 @@
 
 int main(void)
 { 
+    // sequence with known DFT
     complex float in[N] = {1,2,3,4,4,3,2,1};
     complex float out[N];
 

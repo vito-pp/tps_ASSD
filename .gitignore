@@ -26,3 +26,6 @@ build/
 *.log
 *.fft
 *.net 
+
+# C files
+*.o

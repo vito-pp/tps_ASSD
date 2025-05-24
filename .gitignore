@@ -29,3 +29,4 @@ build/
 
 # C files
 *.o
+*.so

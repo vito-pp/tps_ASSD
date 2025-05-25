@@ -64,9 +64,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# ejemplos de como correr el codigo en la terminal:
-# python main.py --mode ks        --freq 330 --dur 3
-# python main.py --mode ks_perc   --freq 200 --dur 1
-# python main.py --mode arpa      --dur 4

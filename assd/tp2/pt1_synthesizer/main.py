@@ -1,66 +1,71 @@
 #!/usr/bin/env python3
-import argparse
 import os
+import numpy as np
 import soundfile as sf
 
-from synth.punto4 import (
-    karplus_strong,
-    karplus_strong_percussion,
-    generate_arpa_arpeggio,
-)
+from core.midi_loader import MidiLoader
+from synth.punto4 import karplus_strong  # KS string synth :contentReference[oaicite:1]{index=1}
 
-def parse_args():
-    p = argparse.ArgumentParser(description="KS Synth CLI")
-    p.add_argument(
-        "--mode", "-m",
-        choices=["ks", "ks_perc", "arpa"],
-        required=True,
-        help="Which Karplus-Strong variant to run"
-    )
-    p.add_argument(
-        "--freq", "-f",
-        type=float,
-        default=440.0,
-        help="Base frequency in Hz (for ks & ks_perc)"
-    )
-    p.add_argument(
-        "--dur", "-d",
-        type=float,
-        default=2.0,
-        help="Duration in seconds"
-    )
-    p.add_argument(
-        "--sr", "-r",
-        type=int,
-        default=44100,
-        help="Sample rate (Hz)"
-    )
-    return p.parse_args()
+def midi_to_ks(track, sr=44100):
+    """
+    Synthesize one Track of NoteEvent with Karplus-Strong.
+    Returns a NumPy 1-D array of length = track duration * sr.
+    """
+    # total track length in seconds
+    total_time = max((e.start_time + e.duration) for e in track.events)
+    buf = np.zeros(int(total_time * sr))
+
+    for e in track.events:
+        # convert MIDI note → frequency in Hz
+        freq = 440.0 * 2 ** ((e.pitch - 69) / 12)
+        y = karplus_strong(freq=freq, duration=e.duration, fs=sr)
+        start = int(e.start_time * sr)
+        end   = start + len(y)
+        # extend buffer if this note overruns
+        if end > buf.shape[0]:
+            buf = np.pad(buf, (0, end - buf.shape[0]))
+        buf[start:end] += y
+
+    # normalize track buffer
+    mx = np.max(np.abs(buf))
+    return buf / mx if mx > 0 else buf
 
 def main():
-    args = parse_args()
+    sr = 44100
+    midi_path = os.path.join('midis', 'dontcry.mid')
 
-    # Make sure output directory exists
-    out_dir = "output"
-    os.makedirs(out_dir, exist_ok=True)
+    # 1) Load all tracks
+    tracks = MidiLoader.load(midi_path, sample_rate=sr)
+    if not tracks:
+        print("❌ No tracks found in MIDI."); return
 
-    # Choose synth & filename
-    if args.mode == "ks":
-        y = karplus_strong(freq=args.freq, duration=args.dur, fs=args.sr)
-        fname = "ks_string.wav"
-    elif args.mode == "ks_perc":
-        y = karplus_strong_percussion(freq=args.freq, duration=args.dur, fs=args.sr)
-        fname = "ks_percussion.wav"
-    else:  # arpa
-        # simple 4-note arpeggio spanning total duration
-        freqs = [261.6, 329.6, 392.0, 523.3]
-        note_dur = args.dur / len(freqs)
-        y = generate_arpa_arpeggio(freqs, note_duration=note_dur, fs=args.sr)
-        fname = "ks_arpeggio.wav"
+    # 2) Keep only tracks with note events
+    playable = [t for t in tracks if t.events]
+    if not playable:
+        print("❌ No note events in any track."); return
 
-    out_path = os.path.join(out_dir, fname)
-    sf.write(out_path, y, args.sr)
-    print(f"✅ Written {out_path}")
+    # 3) Synthesize each track
+    buffers = []
+    for t in playable:
+        print(f"▶ Synthesizing track {t.id} (‘{t.name}’) with {len(t.events)} notes")
+        buffers.append(midi_to_ks(t, sr=sr))
+
+    # 4) Mix: pad to the longest buffer, then sum
+    maxlen = max(b.shape[0] for b in buffers)
+    mix   = np.zeros(maxlen)
+    for b in buffers:
+        mix[:b.shape[0]] += b
+
+    # 5) Normalize full mix
+    mx = np.max(np.abs(mix))
+    if mx > 0:
+        mix /= mx
+
+    # 6) Write to output/
+    os.makedirs('output', exist_ok=True)
+    out_path = os.path.join('output', 'dontcry_full_ks.wav')
+    sf.write(out_path, mix, sr)
+    print(f"✅ Written full-mix KS to {out_path}")
 
 if __name__ == "__main__":
     main()

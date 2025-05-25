@@ -1,0 +1,11 @@
+numpy
+scipy
+matplotlib
+mido
+pretty_midi
+pydub
+soundfile
+librosa
+sounddevice
+pyyaml
+setuptools

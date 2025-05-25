@@ -44,7 +44,7 @@ def find_closest_sample(midi_note, sample_dict):
     return closest_note
 
 # Cargar el archivo MIDI
-midi_data = pretty_midi.PrettyMIDI('dontcry.mid')
+midi_data = pretty_midi.PrettyMIDI('../midis/dontcry.mid')
 
 print("Listado de pistas del archivo MIDI:\n")
 for i, instrument in enumerate(midi_data.instruments):

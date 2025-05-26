@@ -9,7 +9,7 @@
  * @input Ruta al archivo WAV.
  * @output Ventana con el espectrograma.
  *
- * @author Tu Nombre
+ * @author Grupo 3
  * @date 2025
  */
 """

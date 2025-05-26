@@ -1,113 +1,95 @@
-#!/usr/bin/env python3
-import os
-import argparse
-import soundfile as sf
 import numpy as np
+import scipy
+import matplotlib.pyplot as plt
+import soundfile as sf
+import librosa
+import mido
+import pretty_midi
+import sounddevice as sd
+import os
 
-from core.midi_loader import MidiLoader
-from core.mixer      import mix_buffers
-from synth           import get_synth
+from synth.sample import sample_synthesis
 
-# Force registration of synth modules
-import synth.ks
-import synth.perc
-import synth.sample
+def type_of_synthesis():
+    #Choose type of synthesis
+    while True:
+        id_modelado = input(
+            "\nSeleccione el tipo de síntesis que desea realizar:\n"
+            "M - Por muestreo\n"
+            "K - Por método de modelado físico (Karplus strong)\n"
+            "F - Frecuencia modulada\n"
+            "Ingrese M, K o F: "
+        ).strip().upper()
 
-from synth.sample import note_name_to_midi
-from core.espectograma import plot_spectrogram
+        if id_modelado in ['M', 'K', 'F']:
+            break
+        else:
+            print("Error: debe ingresar M, K O F.")
+    return id_modelado
 
-def build_sample_files_dict(instrument_dir: str) -> dict[int, str]:
-    """
-    Scan instrument_dir for .wav files named like 'C4.wav','D#3.wav',…
-    and return a dict mapping MIDI note number → filename.
-    """
-    sample_files: dict[int, str] = {}
-    for fname in os.listdir(instrument_dir):
-        if not fname.lower().endswith(".wav"):
-            continue
-        note = fname[:-4]  # drop ".wav"
-        midi = note_name_to_midi(note)
-        sample_files[midi] = fname
-    return sample_files
+def select_track(midi_data):
+    print("Listado de pistas del archivo MIDI:\n")
+    for i, instrument in enumerate(midi_data.instruments):
+        nombre = instrument.name or "Sin nombre"
+        nota_count = len(instrument.notes)
+        print(f"Pista {i}: Instrumento: {nombre} | Notas: {nota_count}")
+    print("\n")
 
-def parse_args():
-    p = argparse.ArgumentParser("MIDI → multi-synth pipeline")
-    p.add_argument("--midi",     required=True,
-                   help="Path to your .mid file")
-    p.add_argument("--outdir",   default="output",
-                   help="Directory to write per-track and final WAVs")
-    p.add_argument("--sr",       type=int, default=44100,
-                   help="Sample rate in Hz")
-    p.add_argument("--track",      required=True,
-                   help="Comma-separated list of trackID:synthName, e.g. 0:ks,1:perc,2:sample")
-    p.add_argument("--instr-dir",
-                   help="For sample synth: path to folder of sample WAVs")
-    return p.parse_args()
+    total_pistas = len(midi_data.instruments)
+    while True:
+        try:
+            track_idx_to_synthesize = int(input(
+                f"Ingrese el número de pista que desea sintetizar [0–{total_pistas-1}]: "
+            ))
+            if 0 <= track_idx_to_synthesize < total_pistas:
+                break
+            else:
+                print(f"Error: el número debe estar entre 0 y {total_pistas-1}.")
+        except ValueError:
+            print("Error: debe ingresar un número entero válido.")
+    return track_idx_to_synthesize
 
 def main():
-    args = parse_args()
-    os.makedirs(args.outdir, exist_ok=True)
+    midi_file = input("Ingrese el nombre del archivo MIDI que desea sintetizar, incluyendo la extensión .mid.\n")
+    midi_data = pretty_midi.PrettyMIDI("midis/" + midi_file)
 
-    # 1) Load MIDI file into Track objects
-    tracks = MidiLoader.load(args.midi, sample_rate=args.sr)
-    if not tracks:
-        print("❌ No tracks found in MIDI.")
-        return
+    flag_pista = 1
+    while flag_pista:
+        track_idx_to_synthesize = select_track(midi_data) #Selects track thats gonna be synthesized
+        id_modelado = type_of_synthesis() #Selects type of instrument modeling
 
-    bufs = []
-    # 2) Iterate over each mapping entry and synthesize
-    for part in args.track.split(","):
-        tid_str, synth_name = part.split(":")
-        tid = int(tid_str)
+        if id_modelado== 'M': 
+            print(f"Usted eligió sintetizar la pista mediante muestreo.")
+            # Uploads MIDI file
+            sample_synthesis(midi_data, track_idx_to_synthesize)
 
-        # Find the Track with matching ID
-        track = next((t for t in tracks if t.id == tid), None)
-        if track is None:
-            print(f"⚠️  Track {tid} not in MIDI; skipping.")
-            continue
-
-        synth_fn = get_synth(synth_name)
-        synth_kwargs = {}
-
-        if synth_name == "sample":
-            if not args.instr_dir:
-                print("❌ --instr-dir is required for sample synth.")
-                return
-            sample_files = build_sample_files_dict(args.instr_dir)
-            synth_kwargs = {
-                "instrument_dir": args.instr_dir,
-                "sample_files": sample_files
-            }
-
-        # Call the synth function: returns a NumPy array
-        buf = synth_fn(track, sample_rate=args.sr, **synth_kwargs)
-        bufs.append(buf)
-
-        # Write per-track WAV
-        out1 = os.path.join(args.outdir, f"track{tid}_{synth_name}.wav")
-        sf.write(out1, buf, args.sr)
-        print(f"→ Written {out1}")
-
-    if not bufs:
-        print("⚠️ No buffers synthesized; exiting.")
-        return
-
-    # 3) Mix buffers into a master track (or use single buffer)
-    if len(bufs) > 1:
-        master = mix_buffers(bufs)
-    else:
-        master = bufs[0]
-
-    # 4) Write master WAV if non-empty
-    if master.size > 0:
-        out_mix = os.path.join(args.outdir, "final_mix.wav")
-        sf.write(out_mix, master, args.sr)
-        print(f"→ Written mixed output: {out_mix}")
+        elif id_modelado == 'K':
+            print(f"Usted eligió sintetizar la pista mediante Modelado físico (Karplus Strong).")
+            #Call Karplus strong
+        else:
+            print(f"Usted eligió sintetizar la pista mediante Frecuencia modulada.")
+            #Call FM
         
-        # Mostrar el espectrograma del mix final
-        plot_spectrogram(out_mix)
-    else:
-        print("⚠️ Master buffer is empty; skipping final mix.")
+        #Now you have a synthesized track
+
+        #Do you wanna synthesize another track?
+        while True:
+            yes_or_no = input(
+            "\n¿Desea sintetizar otra pista? [S/N]\n"
+        ).strip().upper()
+            if yes_or_no in ['S', 'N']:
+                break
+            else:
+                print("Error: debe ingresar S o N")
+        
+        if yes_or_no == 'N':
+            flag_pista = 0
+    
+    #Now you have N synthesized tracks
+    
+    #Here me out GONZA, this is your cue to stop being gay and mix the WAV files
+
+    return
 
 if __name__ == "__main__":
     main()

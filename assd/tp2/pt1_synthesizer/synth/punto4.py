@@ -221,61 +221,61 @@ if __name__ == '__main__':
 #####################################################################################
 
 # Punto 5: Modelado de caja acustica de una guitarra
-from scipy.signal import sosfilt, zpk2sos
+    from scipy.signal import sosfilt, zpk2sos
 
-def design_modal_resonator(fs, modes):
-    sos = []
-    for f0, r in modes:
-        theta = 2 * np.pi * f0 / fs
-        # poles
-        p = [r * np.exp(1j * theta), r * np.exp(-1j * theta)]
-        # zeros at origin (two)
-        z = [0, 0]
-        # compute k to normalize peak gain to 1
-        k = 1 - 2 * r * np.cos(theta) + r**2
-        sos_mode = zpk2sos(z, p, k)
-        sos.append(sos_mode)
-    return np.vstack(sos)
+    def design_modal_resonator(fs, modes):
+        sos = []
+        for f0, r in modes:
+            theta = 2 * np.pi * f0 / fs
+            # poles
+            p = [r * np.exp(1j * theta), r * np.exp(-1j * theta)]
+            # zeros at origin (two)
+            z = [0, 0]
+            # compute k to normalize peak gain to 1
+            k = 1 - 2 * r * np.cos(theta) + r**2
+            sos_mode = zpk2sos(z, p, k)
+            sos.append(sos_mode)
+        return np.vstack(sos)
 
-def apply_guitar_body(y, fs):
-    modes = [
-        (82,  0.98),
-        (145, 0.985),
-        (230, 0.99),
-        (315, 0.985),
-        (460, 0.98),
-        (620, 0.975)
-    ]
-    sos = design_modal_resonator(fs, modes)
-    return sosfilt(sos, y)
+    def apply_guitar_body(y, fs):
+        modes = [
+            (82,  0.98),
+            (145, 0.985),
+            (230, 0.99),
+            (315, 0.985),
+            (460, 0.98),
+            (620, 0.975)
+        ]
+        sos = design_modal_resonator(fs, modes)
+        return sosfilt(sos, y)
 
-# Generate signals
-fs = 44100
-y_ks = karplus_strong(freq=110, duration=2.0, fs=fs)
-y_body = apply_guitar_body(y_ks, fs)
+    # Generate signals
+    fs = 44100
+    y_ks = karplus_strong(freq=110, duration=2.0, fs=fs)
+    y_body = apply_guitar_body(y_ks, fs)
 
-# Plot time domain
-plt.figure(figsize=(8, 3))
-plt.plot(y_ks[:1000], label='KS only')
-plt.plot(y_body[:1000], label='KS + Body (normalized)', alpha=0.7)
-plt.title('Time Domain - Normalized Resonators')
-plt.legend()
-plt.tight_layout()
-plt.show()
+    # Plot time domain
+    plt.figure(figsize=(8, 3))
+    plt.plot(y_ks[:1000], label='KS only')
+    plt.plot(y_body[:1000], label='KS + Body (normalized)', alpha=0.7)
+    plt.title('Time Domain - Normalized Resonators')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
-# Plot magnitude spectrum
-Yks = np.abs(np.fft.rfft(y_ks))
-Ybody = np.abs(np.fft.rfft(y_body))
-f = np.fft.rfftfreq(len(y_ks), 1/fs)
+    # Plot magnitude spectrum
+    Yks = np.abs(np.fft.rfft(y_ks))
+    Ybody = np.abs(np.fft.rfft(y_body))
+    f = np.fft.rfftfreq(len(y_ks), 1/fs)
 
-plt.figure(figsize=(8, 3))
-plt.semilogy(f, Yks+1e-6, label='KS only')
-plt.semilogy(f, Ybody+1e-6, label='KS + Body (normalized)', alpha=0.7)
-plt.title('Magnitude Spectrum - Normalized Resonators')
-plt.xlabel('Frequency (Hz)')
-plt.legend()
-plt.tight_layout()
-plt.show()
+    plt.figure(figsize=(8, 3))
+    plt.semilogy(f, Yks+1e-6, label='KS only')
+    plt.semilogy(f, Ybody+1e-6, label='KS + Body (normalized)', alpha=0.7)
+    plt.title('Magnitude Spectrum - Normalized Resonators')
+    plt.xlabel('Frequency (Hz)')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 #############################################################################
 
 # Section 5: Disadvantages and Limitations

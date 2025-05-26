@@ -1,59 +1,39 @@
-# core/midi_loader.py
 import mido
-from typing import List
 from core.models import NoteEvent, Track
 
 class MidiLoader:
     @staticmethod
-    def load(path: str, sample_rate: int = 44100) -> List[Track]:
-        """
-        Load a MIDI file and convert it into a list of Track objects,
-        each containing its NoteEvent list with real-time values.
-
-        Args:
-            path: path to the .mid file
-            sample_rate: used to convert MIDI ticks to seconds via tempo
-        Returns:
-            List of Track, one per MIDI track
-        """
+    def load(path: str, sample_rate: int) -> list[Track]:
         mid = mido.MidiFile(path)
-        # build tempo map (time in ticks -> seconds)
-        tempo = 500000  # default microseconds per beat
-        ticks_per_beat = mid.ticks_per_beat
-        # accumulate per-track events
-        tracks: List[Track] = []
-        for i, mtrack in enumerate(mid.tracks):
-            abs_time = 0  # in ticks
-            note_on_dict = {}  # key=(channel,pitch) -> (start_time_seconds)
-            events: List[NoteEvent] = []
+        tracks = []
+        # Build absolute time in seconds:
+        for ti, mtrack in enumerate(mid.tracks):
+            events = []
+            abs_time = 0.0
+            tempo = 500000  # default µs per beat
+            ticks_per_beat = mid.ticks_per_beat
             for msg in mtrack:
-                abs_time += msg.time
+                abs_time += mido.tick2second(msg.time, ticks_per_beat, tempo)
                 if msg.type == 'set_tempo':
                     tempo = msg.tempo
-                elif msg.type == 'note_on' and msg.velocity > 0:
-                    # note on
-                    seconds = mido.tick2second(abs_time, ticks_per_beat, tempo)
-                    note_on_dict[(msg.channel, msg.note)] = seconds
-                elif (msg.type == 'note_off') or (msg.type == 'note_on' and msg.velocity == 0):
-                    key = (msg.channel, msg.note)
-                    if key in note_on_dict:
-                        start = note_on_dict.pop(key)
-                        end = mido.tick2second(abs_time, ticks_per_beat, tempo)
-                        events.append(
-                            NoteEvent(
-                                pitch=msg.note,
-                                velocity=msg.velocity if msg.type=='note_on' else 0,
-                                start_time=start,
-                                duration=end - start,
-                                channel=msg.channel,
-                                track_id=i
-                            )
-                        )
-            # optional: get track name
-            name = ''
-            for meta in mtrack:
-                if meta.type == 'track_name':
-                    name = meta.name
-                    break
-            tracks.append(Track(id=i, name=name, events=events))
+                elif msg.type == 'note_on' and msg.velocity>0:
+                    # store pending note_on; you'll need a dict to match note_off
+                    # for brevity, you can accumulate and then match pairs
+                    events.append(NoteEvent(
+                        pitch=msg.note,
+                        velocity=msg.velocity,
+                        start_time=abs_time,
+                        duration=0.0,   # fill in later
+                        channel=msg.channel,
+                        track_id=ti
+                    ))
+                elif (msg.type=='note_off' or (msg.type=='note_on' and msg.velocity==0)):
+                    # find matching note_on in events and set its duration
+                    for e in reversed(events):
+                        if e.pitch==msg.note and e.duration==0.0 and e.channel==msg.channel:
+                            e.duration = abs_time - e.start_time
+                            break
+            tracks.append(Track(id=ti,
+                                name=mtrack.name or "",
+                                events=[e for e in events if e.duration>0]))
         return tracks

@@ -4,17 +4,46 @@ Este repositorio contiene dos scripts principales para sintetizar archivos MIDI 
 
 ---
 
-## venv y depenencias
+## venv y dependencias
 
-1. Entorno virtual:
+### Linux / macOS
+
+1. Crear y activar un entorno virtual:
 
     ```bash
     python3 -m venv venv
     source venv/bin/activate
+    ```
 
-2. Instalar dependencias
+2. Instalar dependencias:
 
+    ```bash
     pip install -r requirements.txt
+    ```
+
+### Windows (PowerShell)
+
+1. Crear y activar un entorno virtual:
+
+    ```powershell
+    python -m venv venv
+    .\venv\Scripts\Activate.ps1
+    ```
+
+   o en CMD:
+
+    ```cmd
+    python -m venv venv
+    venv\Scripts\activate.bat
+    ```
+
+2. Instalar dependencias:
+
+    ```powershell
+    pip install -r requirements.txt
+    ```
+
+---
 
 ## ejecución del programa
 

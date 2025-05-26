@@ -30,28 +30,25 @@ import os
 # Punto 1: Modelo tiempo invariante y variante (Karplus Strong)
 ###########################################################################
 def karplus_strong(freq, duration, fs=44100, R=0.99, uniform=True):
-    """Original Karplus-Strong plucked-string synthesis."""
-    # 1) Compute delay length (integer)
-    L = int(fs / freq - 0.5)
-    # 2) Total output samples
+    L = int(fs/freq - 0.5)
     N = int(duration * fs)
-    # 3) Generate initial noise
-    if uniform:
-        noise = np.random.uniform(-1, 1, size=L)
-    else:
-        noise = np.random.normal(0, 0.8, size=L)
-    # 4) Output buffer
+    if N <= 0:
+        return np.zeros(0)
+    # generate initial noise of length L
+    noise = (np.random.uniform if uniform else np.random.normal)(size=L)
     y = np.zeros(N)
-    # 5) Copy noise into the first L samples
-    y[:L] = noise
-    #    —or, if you want to pre-filter the noise:
-    y[0] = noise[0]
-    for n in range(1, L):
-         y[n] = 0.5*(noise[n] + noise[n-1])
 
-    # 6) Main KS loop (feedback only)
-    for n in range(L, N):
-        y[n] = R * 0.5 * (y[n - L] + y[n - L - 1])
+    # only seed the first min(L, N) samples
+    M = min(L, N)
+    y[:M] = noise[:M]
+    # optionally pre-filter that seed
+    for n in range(1, M):
+        y[n] = 0.5*(noise[n] + noise[n-1])
+
+    # only run the main loop when L < N
+    if L < N:
+        for n in range(L, N):
+            y[n] = R * 0.5 * (y[n - L] + y[n - L - 1])
 
     return y
 

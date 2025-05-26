@@ -50,7 +50,9 @@ Este repositorio contiene dos scripts principales para sintetizar archivos MIDI 
 1. Antes de sintetizar conviene saber qué tracks contienen notas. 
 Por eso primero hay que ejecutar:
 
+    ```
     python list_tracks.py midi/<name-of-midi>.mid 
+    ```
 
 Salida de ejemplo:
 
@@ -69,11 +71,13 @@ Salida de ejemplo:
 
 2. Luego mediante CLI ejecutar el main.py con los siguientes posibles argumentos:
 
+    ```
     python main.py \
             --midi midis/<name-of-midi>.mid \
             --track 1:<synth_type>,2:<synth_type>,3:<synth_type> \
             --instr-dir synth/guitarra \
             --outdir output
+    ```
 
 ,donde en --track se indica el tipo de sintetizador que se va a utilizar para cada pista. Agregar tantos argumentos como pistas se quiera sintetizar (en el ejemplos sólo hay tres).
 
@@ -86,8 +90,10 @@ La salida entonces será:
 
 Ejemplo de uso:
 
+    ```
     python main.py \
             --midi midis/concierto-de-aranjuez.mid \
             --map 1:ks,3:ks \
             --instr-dir synth/guitarra \
             --outdir output
+    ```

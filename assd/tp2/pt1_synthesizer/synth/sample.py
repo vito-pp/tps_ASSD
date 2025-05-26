@@ -69,10 +69,10 @@ def load_sample(filename, instrumento):
 #  @brief Synthesizes a midi track with a desired instrument sound.
 #          It asks for several user inputs so as to decide which
 #            track has to be synthesized and with which instrument.
- ## 
+## 
 # @param in midi_data: map containing the midi information
 #   @output: .wav file of the track with the sound of the desired instrument.
-#  @return void
+#  @return the .wav file with the synthesized track
 def sample_synthesis(midi_data, track_idx_to_synthesize):
     #File list
     wav_files = ['F2.wav','A#2.wav', 'D#3.wav','G#3.wav', 'C#4.wav', 'F#4.wav', 'B4.wav', 'E5.wav']
@@ -152,4 +152,4 @@ def sample_synthesis(midi_data, track_idx_to_synthesize):
     sf.write(nombre_archivo, output_audio, sample_rate)
 
     print(f"Archivo WAV generado en output/: 'Pista-{track_idx_to_synthesize}({instrumento}).wav'")
-    return
+    return output_audio

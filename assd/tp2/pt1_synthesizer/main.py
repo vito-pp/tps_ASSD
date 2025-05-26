@@ -9,6 +9,7 @@ import sounddevice as sd
 import os
 
 from synth.sample import sample_synthesis
+from core.mixer import mix_buffers
 
 def type_of_synthesis():
     #Choose type of synthesis
@@ -53,6 +54,9 @@ def main():
     midi_file = input("Ingrese el nombre del archivo MIDI que desea sintetizar, incluyendo la extensión .mid.\n")
     midi_data = pretty_midi.PrettyMIDI("midis/" + midi_file)
 
+    buffers = [] # to store each synthesized track
+    nbr_synthd_tracks = 0
+
     flag_pista = 1
     while flag_pista:
         track_idx_to_synthesize = select_track(midi_data) #Selects track thats gonna be synthesized
@@ -61,14 +65,21 @@ def main():
         if id_modelado== 'M': 
             print(f"Usted eligió sintetizar la pista mediante muestreo.")
             # Uploads MIDI file
-            sample_synthesis(midi_data, track_idx_to_synthesize)
+            output_audio = sample_synthesis(midi_data,
+                                            track_idx_to_synthesize)
+            buffers.append(output_audio)
+            nbr_synthd_tracks += 1
 
         elif id_modelado == 'K':
-            print(f"Usted eligió sintetizar la pista mediante Modelado físico (Karplus Strong).")
+            print(f"Usted eligió sintetizar la pista mediante modelado físico (Karplus Strong).")
             #Call Karplus strong
+            nbr_synthd_tracks += 1
+
         else:
-            print(f"Usted eligió sintetizar la pista mediante Frecuencia modulada.")
+            print(f"Usted eligió sintetizar la pista mediante frecuencia modulada.")
             #Call FM
+            nbr_synthd_tracks += 1
+
         
         #Now you have a synthesized track
 
@@ -86,7 +97,19 @@ def main():
             flag_pista = 0
     
     #Now you have N synthesized tracks
+
+    if not buffers:
+        print("No hay pistas sintetizadas; terminando.")
+        return
     
+    # Mix the tracks into a master
+    master = mix_buffers(buffers)
+
+    os.makedirs("output", exist_ok=True)
+    final_name = "master_mix.wav"
+    final_path = os.path.join("output", final_name)
+    sf.write(final_path, master, 44100)
+    print(f"→ Master guardado en: {final_path}")
     #Here me out GONZA, this is your cue to stop being gay and mix the WAV files
 
     return

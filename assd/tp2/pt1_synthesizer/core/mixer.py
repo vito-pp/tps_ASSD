@@ -1,9 +1,21 @@
 import numpy as np
+from typing import List
 
 def mix_buffers(buffers: list[np.ndarray]) -> np.ndarray:
-    L = max(b.shape[0] for b in buffers)
-    mix = np.zeros(L)
-    for b in buffers:
-        mix[:b.shape[0]] += b
-    mx = np.max(np.abs(mix)) or 1
-    return mix / mx
+    if not buffers:
+            return np.array([], dtype=float)
+
+    # 1) Longitud máxima
+    max_len = max(buf.shape[0] for buf in buffers)
+
+    # 2) Rellenar y sumar
+    mix = np.zeros(max_len, dtype=float)
+    for buf in buffers:
+        mix[: buf.shape[0]] += buf
+
+    # 3) Normalizar (si no es todo ceros)
+    peak = np.max(np.abs(mix))
+    if peak > 0:
+        mix = mix / peak
+
+    return mix

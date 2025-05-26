@@ -14,6 +14,7 @@ import synth.perc
 import synth.sample
 
 from synth.sample import note_name_to_midi
+from core.espectograma import plot_spectrogram
 
 def build_sample_files_dict(instrument_dir: str) -> dict[int, str]:
     """
@@ -55,7 +56,7 @@ def main():
 
     bufs = []
     # 2) Iterate over each mapping entry and synthesize
-    for part in args.map.split(","):
+    for part in args.track.split(","):
         tid_str, synth_name = part.split(":")
         tid = int(tid_str)
 
@@ -102,6 +103,9 @@ def main():
         out_mix = os.path.join(args.outdir, "final_mix.wav")
         sf.write(out_mix, master, args.sr)
         print(f"→ Written mixed output: {out_mix}")
+        
+        # Mostrar el espectrograma del mix final
+        plot_spectrogram(out_mix)
     else:
         print("⚠️ Master buffer is empty; skipping final mix.")
 

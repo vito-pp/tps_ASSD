@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+soundfile
+librosa
+mido
+pretty_midi
+sounddevice

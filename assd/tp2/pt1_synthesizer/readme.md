@@ -1,10 +1,10 @@
 # PT1 Sintetizador MIDI
 
-Este repositorio contiene dos scripts principales para sintetizar archivos MIDI (.mid) usando el algoritmo de Karplus–Strong y mezclar todas las pistas en un único archivo de audio.
+Este repositorio contiene dos scripts principales para sintetizar archivos MIDI (.mid) donde cada pista puede ser sintetizada usando síntesis por frecuencia modulada (FM), por el algoritmo de Karplus–Strong (síntesis mediante modelos físicos) y síntesis mediante muestras para luego mezclar todas las pistas en un único archivo de audio (.wav).
 
 ---
 
-## venv y dependencias
+## 1.venv y dependencias
 
 ### Linux / macOS
 
@@ -45,7 +45,7 @@ Este repositorio contiene dos scripts principales para sintetizar archivos MIDI 
 
 ---
 
-## ejecución del programa
+## 2. ejecución del programa
 
 1. Antes de sintetizar conviene saber qué tracks contienen notas. 
 Por eso primero hay que ejecutar:

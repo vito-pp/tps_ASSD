@@ -51,7 +51,7 @@ Este repositorio contiene dos scripts principales para sintetizar archivos MIDI 
 Por eso primero hay que ejecutar:
 
     ```
-    python list_tracks.py midi/<name-of-midi>.mid 
+    python list_tracks.py midis/<name-of-midi>.mid 
     ```
 
 Salida de ejemplo:

@@ -88,11 +88,11 @@ def apply_effects(wav_path):
     audio = AudioSegment.from_wav(wav_path)
 
     print("\nSeleccione efectos para aplicar:")
-    apply_eco = input("Aplicar eco? [S/N]: ").lower() == 'y'
-    apply_rev = input("Aplicar reverberación? [S/N]: ").lower() == 'y'
-    apply_lowpass = input("Apicar filtro pasabajos? [S/N]: ").lower() == 'y'
-    apply_flang = input("Aplicar flanger? [S/N]: ").lower() == 'y'
-    apply_vibr = input("Aplicar vibrato? [S/N]: ").lower() == 'y'
+    apply_eco = input("Aplicar eco? [S/N]: ").lower() == 'S'
+    apply_rev = input("Aplicar reverberación? [S/N]: ").lower() == 'S'
+    apply_lowpass = input("Apicar filtro pasabajos? [S/N]: ").lower() == 'S'
+    apply_flang = input("Aplicar flanger? [S/N]: ").lower() == 'S'
+    apply_vibr = input("Aplicar vibrato? [S/N]: ").lower() == 'S'
 
     processed = audio
 

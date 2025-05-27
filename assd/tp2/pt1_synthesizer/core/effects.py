@@ -88,11 +88,11 @@ def apply_effects(wav_path):
     audio = AudioSegment.from_wav(wav_path)
 
     print("\nSeleccione efectos para aplicar:")
-    apply_eco = input("Aplicar eco? [S/N]: ").lower() == 'S'
-    apply_rev = input("Aplicar reverberación? [S/N]: ").lower() == 'S'
-    apply_lowpass = input("Apicar filtro pasabajos? [S/N]: ").lower() == 'S'
-    apply_flang = input("Aplicar flanger? [S/N]: ").lower() == 'S'
-    apply_vibr = input("Aplicar vibrato? [S/N]: ").lower() == 'S'
+    apply_eco = input("Aplicar eco? [S/N]: ").lower() == 's'
+    apply_rev = input("Aplicar reverberación? [S/N]: ").lower() == 's'
+    apply_lowpass = input("Apicar filtro pasabajos? [S/N]: ").lower() == 's'
+    apply_flang = input("Aplicar flanger? [S/N]: ").lower() == 's'
+    apply_vibr = input("Aplicar vibrato? [S/N]: ").lower() == 's'
 
     processed = audio
 
@@ -103,6 +103,7 @@ def apply_effects(wav_path):
 
     if apply_rev:
         processed = reverberacion_plana(processed)
+        print("   ↪ Se ha aplicado reverberación al master")
 
     if apply_lowpass:
         cutoff = int(input("   ↪ Frecuencia de corte (Hz, default 2000): ") or "2000")

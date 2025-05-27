@@ -26,7 +26,7 @@ def type_of_synthesis():
         if id_modelado in ['M', 'K', 'F']:
             break
         else:
-            print("Error: debe ingresar M, K O F.")
+            print("Error: debe ingresar M, K o F.")
     return id_modelado
 
 def select_track(midi_data):
@@ -52,15 +52,15 @@ def select_track(midi_data):
     return track_idx_to_synthesize
 
 def main():
-    midi_file = input("Ingrese el nombre del archivo MIDI que desea sintetizar, incluyendo la extensión .mid.\n")
+    midi_file = input("Ingrese el nombre del archivo MIDI que desea sintetizar (incluyendo la extensión .mid).\n")
     midi_data = pretty_midi.PrettyMIDI("midis/" + midi_file)
 
     buffers = [] # to store each synthesized track
-    nbr_synthd_tracks = 0
 
     flag_pista = 1
     while flag_pista:
         track_idx_to_synthesize = select_track(midi_data) #Selects track thats gonna be synthesized
+
         id_modelado = type_of_synthesis() #Selects type of instrument modeling
 
         if id_modelado== 'M': 
@@ -69,18 +69,15 @@ def main():
             output_audio = sample_synthesis(midi_data,
                                             track_idx_to_synthesize)
             buffers.append(output_audio)
-            nbr_synthd_tracks += 1
 
         elif id_modelado == 'K':
             print(f"Usted eligió sintetizar la pista mediante modelado físico (Karplus Strong).")
             #Call Karplus strong
-            nbr_synthd_tracks += 1
-
+            
         else:
             print(f"Usted eligió sintetizar la pista mediante frecuencia modulada.")
             #Call FM
-            nbr_synthd_tracks += 1
-
+            
         #Now you have a synthesized track
 
         #Do you wanna synthesize another track?

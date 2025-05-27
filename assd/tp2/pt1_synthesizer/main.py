@@ -114,7 +114,7 @@ def main():
 
     # Sound FX
     apply_effects(final_path)
-
+    plot_spectrogram(final_path)
     return
 
 if __name__ == "__main__":

@@ -9,9 +9,11 @@ import sounddevice as sd
 import os
 
 from synth.sample import sample_synthesis
+from synth.ks import ks_synthesis
 from core.mixer import mix_buffers
 from core.espectograma import plot_spectrogram
 from core.effects import apply_effects
+
 def type_of_synthesis():
     #Choose type of synthesis
     while True:
@@ -72,7 +74,8 @@ def main():
 
         elif id_modelado == 'K':
             print(f"Usted eligió sintetizar la pista mediante modelado físico (Karplus Strong).")
-            #Call Karplus strong
+            output_audio = ks_synthesis(midi_data, track_idx_to_synthesize)
+            buffers.append(output_audio)
             
         else:
             print(f"Usted eligió sintetizar la pista mediante frecuencia modulada.")
@@ -96,7 +99,7 @@ def main():
     #Now you have N synthesized tracks
 
     if not buffers:
-        print("No hay pistas sintetizadas; terminando.")
+        print("No hay pistas sintetizadas; terminando...")
         return
     
     # Mix the tracks into a master

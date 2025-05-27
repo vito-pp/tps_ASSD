@@ -1,38 +1,50 @@
+import os
 import numpy as np
-from synth import register
-from core.models import Track
+import soundfile as sf
+import librosa
+import pretty_midi
 from synth.punto4 import karplus_strong
 
-def ks_synth(
-    track: Track,
-    sample_rate: int,
-    R: float = 0.99,
-    uniform: bool = True
-) -> np.ndarray:
+def ks_synthesis(midi_data: pretty_midi.PrettyMIDI, track_idx: int):
     """
-    Synthesize one Track via Karplus-Strong.
+    Interactivo: sintetiza la pista `track_idx` usando Karplus-Strong
+    y guarda el WAV en output/Pista-<idx>-KS.wav.
     """
-    # find total track length in seconds
-    total = max((e.start_time + e.duration) for e in track.events)
-    buf   = np.zeros(int(total * sample_rate))
+    # Selección de parámetros
+    ruido = input("Ruido uniforme? [S/n]: ").strip().lower() != 'n'
 
-    for e in track.events:
-        freq = 440.0 * 2 ** ((e.pitch - 69) / 12)
-        y    = karplus_strong(
-                   freq=freq,
-                   duration=e.duration,
-                   fs=sample_rate,
-                   R=R,
-                   uniform=uniform
-               )
-        start = int(e.start_time * sample_rate)
+    inst = midi_data.instruments[track_idx]
+    sr = 44100
+    dur = midi_data.get_end_time()
+    buf = np.zeros(int(dur * sr))
+
+    # Por cada nota, calculo frecuencia y pluck
+    for note in inst.notes:
+        freq = 440.0 * 2 ** ((note.pitch - 69) / 12)  
+        y = karplus_strong(freq=freq,
+                           duration=note.end - note.start,
+                           fs=sr,
+                           R=0.99,
+                           uniform=ruido)
+        start = int(note.start * sr)
         end   = start + len(y)
         if end > buf.shape[0]:
             buf = np.pad(buf, (0, end - buf.shape[0]))
         buf[start:end] += y
 
-    mx = np.max(np.abs(buf)) or 1.0
-    return buf / mx
+    # Normalizo
+    peak = np.max(np.abs(buf)) or 1.0
+    buf /= peak
 
-# register under the key "ks"
-register("ks", ks_synth)
+    # Guardo en output/
+    os.makedirs("output", exist_ok=True)
+    nombre = f"Pista-{track_idx}-KS.wav"
+    path   = os.path.join("output", nombre)
+    sf.write(path, buf, sr)
+    print(f"Archivo KS generado: {path}")
+
+    return buf
+
+# Registrar también si quisieras dispatch vía get_synth
+from synth import register
+register("ks_int", ks_synthesis)

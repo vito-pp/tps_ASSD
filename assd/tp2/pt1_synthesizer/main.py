@@ -10,7 +10,8 @@ import os
 
 from synth.sample import sample_synthesis
 from core.mixer import mix_buffers
-
+from core.espectograma import plot_spectrogram
+from core.effects import apply_effects
 def type_of_synthesis():
     #Choose type of synthesis
     while True:
@@ -110,7 +111,8 @@ def main():
     final_path = os.path.join("output", final_name)
     sf.write(final_path, master, 44100)
     print(f"→ Master guardado en: {final_path}")
-    #Here me out GONZA, this is your cue to stop being gay and mix the WAV files
+    apply_effects(final_path)
+    print(f"→ Efectos aplicados y guardados en: {final_path}")
 
     return
 

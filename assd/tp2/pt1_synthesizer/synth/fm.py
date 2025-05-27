@@ -3,6 +3,44 @@ import numpy as np
 import soundfile as sf
 import pretty_midi
 
+# teoría basada en: "The Synthesis of Complex Audio Spectra
+# by Means of Frequency Modulation", Chowning
+
+def A_adsr(t: np.ndarray, dur: float, A_peak: float = 1.0) -> np.ndarray:
+    '''
+    Envolvente ADSR vectorizada para un array de tiempos t.
+    '''
+    A = 0.01 * dur    # 1% attack
+    D = 0.1 * dur     # 10% decay
+    S = 0.7           # sustain level
+    R = 0.2 * dur     # 20% release
+
+    env = np.zeros_like(t)
+    # Attack
+    env = np.where(t < A, (t / A) * A_peak, env)
+    # Decay
+    mask = (t >= A) & (t < A + D)
+    env = np.where(mask, A_peak - (A_peak - S) * (t - A) / D, env)
+    # Sustain
+    mask = (t >= A + D) & (t < dur - R)
+    env = np.where(mask, S, env)
+    # Release
+    mask = t >= (dur - R)
+    env = np.where(mask, S * (1 - (t - (dur - R)) / R), env)
+    return env
+
+def I_woodwind(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
+    '''
+    Índice de modulación decreciente exponencial para woodwind.
+    '''
+    tau = 0.05 * dur  # 5% de la duración
+    I = I_max * np.exp(-t / tau)
+    return I
+
+def I_brass(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
+    I = I_max * (t / dur)
+    return I
+
 def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 44100):
     """
     Sintetiza la pista `track_id` de midi_data usando FM synthesis.
@@ -22,8 +60,8 @@ def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 441
     print("→ Sintetizando como", "BRASS" if is_brass else "WOODWIND")
 
     # Parámetros fijos
-    I_max = 5.0            # índice pico de modulación
-    ratio = 2.0 if is_brass else 1.5   # fc/fm ratio típico
+    I_max = 3.0            # índice pico de modulación
+    ratio = 3.0 if is_brass else 1.5   # fc/fm ratio típico
     # para woodwind vamos a decaer con tau = 50% de la nota
     # para brass el índice se rampa lineal en [0..I_max]
 
@@ -46,17 +84,14 @@ def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 441
         fc = 440.0 * 2**((note.pitch - 69)/12)
         fm = fc / ratio
 
-        # 3.2) envolvente de índice I(t)
-        if is_brass:
-            I = I_max * (t / dur)           # lineal desde 0 hasta I_max
-        else:
-            tau = dur * 0.5
-            I   = I_max * np.exp(-t / tau)  # decaimiento exponencial
+        # Envolventes vectorizadas
+        I = I_brass(t, dur, I_max) if is_brass else I_woodwind(t, dur, I_max)
+        A = A_adsr(t, dur, A_peak=1.0)
 
         # 3.3) cálculo de la señal FM
-        modulator = np.sin(2 * np.pi * fm * t)
-        phase     = 2 * np.pi * fc * t + I * modulator
-        y_note    = np.sin(phase)
+        modulator = np.sin(2 * np.pi * fm * t - np.pi/2)
+        phase     = 2 * np.pi * fc * t + I * modulator - np.pi/2
+        y_note    = A * np.sin(phase)
 
         # 3.4) agregar al buffer maestro
         i0 = int(start_s * sr)

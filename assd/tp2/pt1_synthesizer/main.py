@@ -112,7 +112,7 @@ def main():
     sf.write(final_path, master, 44100)
     print(f"→ Master guardado en: {final_path}")
 
-    # Efectos de sonido
+    # Sound FX
     apply_effects(final_path)
 
     return

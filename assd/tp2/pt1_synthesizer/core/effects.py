@@ -82,6 +82,12 @@ def vibrato(audio_segment, depth=0.002, rate=5):
 
 # --- MAIN FUNCTION TO CALL FROM main.py ---
 def apply_effects(wav_path):
+    si_o_no = input("Desea aplicarle efectos " \
+                    "a la mezcla master? [S/N]").lower() == 's'
+    if si_o_no != 's':
+        print("No se han aplicado efectos de sonido.")
+        return
+
     if not os.path.exists(wav_path):
         raise FileNotFoundError(f"Error, archivo no encontrado: {wav_path}")
 

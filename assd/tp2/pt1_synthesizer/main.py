@@ -110,8 +110,9 @@ def main():
     final_path = os.path.join("output", final_name)
     sf.write(final_path, master, 44100)
     print(f"→ Master guardado en: {final_path}")
+
+    # Efectos de sonido
     apply_effects(final_path)
-    print(f"→ Efectos aplicados y guardados en: {final_path}")
 
     return
 

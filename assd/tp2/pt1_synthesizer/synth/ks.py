@@ -11,7 +11,7 @@ def ks_synthesis(midi_data: pretty_midi.PrettyMIDI, track_idx: int):
     y guarda el WAV en output/Pista-<idx>-KS.wav.
     """
     # Selección de parámetros
-    ruido = input("Ruido uniforme? [S/n]: ").strip().lower() != 'n'
+    ruido = input("Ruido uniforme? [S/N]:\n").strip().lower() != 'n'
 
     inst = midi_data.instruments[track_idx]
     sr = 44100

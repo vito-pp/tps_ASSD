@@ -30,3 +30,6 @@ build/
 # C files
 *.o
 *.so
+
+# output files
+*.wav

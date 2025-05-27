@@ -10,6 +10,7 @@ import os
 
 from synth.sample import sample_synthesis
 from synth.ks import ks_synthesis
+from synth.fm import fm_synthesis
 from core.mixer import mix_buffers
 from core.espectograma import plot_spectrogram
 from core.effects import apply_effects
@@ -68,8 +69,7 @@ def main():
         if id_modelado== 'M': 
             print(f"Usted eligió sintetizar la pista mediante muestreo.")
             # Uploads MIDI file
-            output_audio = sample_synthesis(midi_data,
-                                            track_idx_to_synthesize)
+            output_audio = sample_synthesis(midi_data, track_idx_to_synthesize)
             buffers.append(output_audio)
 
         elif id_modelado == 'K':
@@ -79,8 +79,9 @@ def main():
             
         else:
             print(f"Usted eligió sintetizar la pista mediante frecuencia modulada.")
-            #Call FM
-            
+            output_audio = fm_synthesis(midi_data, track_idx_to_synthesize)
+            buffers.append(output_audio)
+
         #Now you have a synthesized track
 
         #Do you wanna synthesize another track?

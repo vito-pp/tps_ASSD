@@ -81,7 +81,6 @@ def main():
             #Call FM
             nbr_synthd_tracks += 1
 
-        
         #Now you have a synthesized track
 
         #Do you wanna synthesize another track?

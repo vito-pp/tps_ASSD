@@ -83,43 +83,43 @@ def vibrato(audio_segment, depth=0.002, rate=5):
 # --- MAIN FUNCTION TO CALL FROM main.py ---
 def apply_effects(wav_path):
     if not os.path.exists(wav_path):
-        raise FileNotFoundError(f"❌ File not found: {wav_path}")
+        raise FileNotFoundError(f"Error, archivo no encontrado: {wav_path}")
 
     audio = AudioSegment.from_wav(wav_path)
 
-    print("\n🎛 Select effects to apply:")
-    apply_eco = input("Apply echo? (y/n): ").lower() == 'y'
-    apply_rev = input("Apply flat reverb? (y/n): ").lower() == 'y'
-    apply_lowpass = input("Apply low-pass filter? (y/n): ").lower() == 'y'
-    apply_flang = input("Apply flanger? (y/n): ").lower() == 'y'
-    apply_vibr = input("Apply vibrato? (y/n): ").lower() == 'y'
+    print("\nSeleccione efectos para aplicar:")
+    apply_eco = input("Aplicar eco? (y/n): ").lower() == 'y'
+    apply_rev = input("Aplicar reverberación? (y/n): ").lower() == 'y'
+    apply_lowpass = input("Apicar filtro pasabajos? (y/n): ").lower() == 'y'
+    apply_flang = input("Aplicar flanger? (y/n): ").lower() == 'y'
+    apply_vibr = input("Aplicar vibrato? (y/n): ").lower() == 'y'
 
     processed = audio
 
     if apply_eco:
         delay = int(input("   ↪ Echo delay (ms, default 150): ") or "150")
-        atten = int(input("   ↪ Echo attenuation (dB, default 6): ") or "6")
+        atten = int(input("   ↪ Echo atencuación (dB, default 6): ") or "6")
         processed = eco_simple(processed, delay, atten)
 
     if apply_rev:
         processed = reverberacion_plana(processed)
 
     if apply_lowpass:
-        cutoff = int(input("   ↪ Low-pass cutoff (Hz, default 2000): ") or "2000")
+        cutoff = int(input("   ↪ Frecuencia de corte (Hz, default 2000): ") or "2000")
         processed = lowpass_filter(processed, cutoff)
 
     if apply_flang:
-        depth = float(input("   ↪ Flanger depth (s, default 0.002): ") or "0.002")
+        depth = float(input("   ↪ Profundidad del flanger (s, default 0.002): ") or "0.002")
         rate = float(input("   ↪ Flanger rate (Hz, default 0.25): ") or "0.25")
         processed = flanger(processed, depth, rate)
 
     if apply_vibr:
-        depth = float(input("   ↪ Vibrato depth (s, default 0.002): ") or "0.002")
+        depth = float(input("   ↪ Profundidad del vibrato (s, default 0.002): ") or "0.002")
         rate = float(input("   ↪ Vibrato rate (Hz, default 5): ") or "5")
         processed = vibrato(processed, depth, rate)
 
-    output_name = "finalMaster_FX.wav"
-    processed.export(output_name, format="wav")
+    output_name = "master_mix_FX.wav"
+    processed.export("output/" + output_name, format="wav")
     print(f"✅ Processed audio saved as: {output_name}")
 
 # Only run this if called directly, not when imported

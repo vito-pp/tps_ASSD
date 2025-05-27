@@ -38,6 +38,9 @@ def I_woodwind(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
     return I
 
 def I_brass(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
+    '''
+    Índice de modulación lineal para brass.
+    '''
     I = I_max * (t / dur)
     return I
 

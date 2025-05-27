@@ -120,7 +120,7 @@ def apply_effects(wav_path):
 
     output_name = "master_mix_FX.wav"
     processed.export("output/" + output_name, format="wav")
-    print(f"✅ Processed audio saved as: {output_name}")
+    print(f"Audio con efectos guardado en output/: {output_name}")
 
 # Only run this if called directly, not when imported
 if __name__ == "__main__":

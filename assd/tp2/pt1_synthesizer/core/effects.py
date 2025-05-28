@@ -84,9 +84,9 @@ def vibrato(audio_segment, depth=0.002, rate=5):
 def apply_effects(wav_path):
     si_o_no = input("Desea aplicarle efectos " \
                     "a la mezcla master? [S/N]\n").lower() == 's'
-    if si_o_no != 's':
+    if si_o_no==False:
         print("No se han aplicado efectos de sonido.")
-        return
+        return wav_path
 
     if not os.path.exists(wav_path):
         raise FileNotFoundError(f"Error, archivo no encontrado: {wav_path}")
@@ -126,9 +126,10 @@ def apply_effects(wav_path):
         processed = vibrato(processed, depth, rate)
 
     output_name = "master_mix_FX.wav"
+    output_path = os.path.join("output", output_name)
     processed.export("output/" + output_name, format="wav")
     print(f"Audio con efectos guardado en output/: {output_name}")
-
+    return output_path
 # Only run this if called directly, not when imported
 if __name__ == "__main__":
     path = input("🔍 Enter the path to the WAV file: ").strip()

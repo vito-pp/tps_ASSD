@@ -25,12 +25,12 @@ def plot_spectrogram(wav_path: str):
     Carga el WAV dado y guarda su espectrograma en escala log como imagen PNG.
     """
     if not os.path.exists(wav_path):
-        raise FileNotFoundError(f"❌ File not found: {wav_path}")
+        raise FileNotFoundError(f"❌ Archivo no encontrado: {wav_path}")
 
     # Carga audio completo (respetando la tasa original)
     y, sr = librosa.load(wav_path, sr=None)
     duration = librosa.get_duration(y=y, sr=sr)
-    print(f"✅ Loaded {wav_path} | Duration: {duration:.2f}s | Sample Rate: {sr}Hz")
+
 
     # Cálculo de STFT y conversión a dB
     S    = librosa.stft(y)
@@ -46,15 +46,15 @@ def plot_spectrogram(wav_path: str):
         cmap='magma'
     )
     plt.colorbar(format="%+2.0f dB")
-    plt.title(f'Spectrograma (escala log) de {os.path.basename(wav_path)}')
+    plt.title(f'Espectrograma (escala log) de {os.path.basename(wav_path)}')
     plt.tight_layout()
 
     # Nombre de salida basado en el nombre del archivo WAV
-    output_file = "output/" + os.path.splitext(wav_path)[0] + "_spectrogram.png"
+    output_file = os.path.splitext(wav_path)[0] + "_spectrogram.png"
     plt.savefig(output_file, dpi=300)
     plt.close()
 
-    print(f"📸 Spectrograma guardado como: {output_file}")
+    print(f"📸 Espectrograma guardado como: {output_file}")
 
 if __name__ == "__main__":
     # Modo interactivo: pide la ruta y guarda el espectrograma

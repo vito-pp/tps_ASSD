@@ -113,8 +113,8 @@ def main():
     print(f"→ Master guardado en: {final_path}")
 
     # Sound FX
-    apply_effects(final_path)
-    plot_spectrogram(final_path)
+    path_with_FX = apply_effects(final_path)
+    plot_spectrogram(path_with_FX)
     return
 
 if __name__ == "__main__":

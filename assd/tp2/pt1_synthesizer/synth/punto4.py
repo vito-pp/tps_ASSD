@@ -53,30 +53,27 @@ def karplus_strong(freq, duration, fs=44100, R=0.99, uniform=True):
     return y
 
 def karplus_strong_percussion(freq, duration, b, fs=44100, R=0.99, uniform=True):
-    """Percussion KS: random ±1 sign in feedback with probability b of +1."""
-    # 1) Delay length
-    L = int(fs / freq - 0.5)
-    # 2) Output length
+    L = int(fs/freq - 0.5)
     N = int(duration * fs)
-    # 3) Initial excitation
-    if uniform:
-        noise = np.random.uniform(-1, 1, size=L)
-    else:
-        noise = np.random.normal(0, 0.8, size=L)
-    # 4) Output buffer
+    if N <= 0:
+        return np.zeros(0)
+    # generate initial noise of length L
+    noise = (np.random.uniform if uniform else np.random.normal)(size=L)
     y = np.zeros(N)
-    # 5) Seed the buffer (pre-filter noise if desired)
-    y[:L] = noise
-    y[0] = noise[0]
-    for n in range(1, L):
-        y[n] = 0.5 * (noise[n] + noise[n-1])
 
-    # 6) Main loop — FEEDBACK with a fresh random sign each sample
-    for n in range(L, N):
-        # Recompute sign *inside* the loop, with correct probability
-        sign = 1 if np.random.rand() < b else -1
-        y[n] = sign * R * 0.5 * (y[n - L] + y[n - L - 1])
+    # only seed the first min(L, N) samples
+    M = min(L, N)
+    y[:M] = noise[:M]
+    # optionally pre-filter that seed
+    for n in range(1, M):
+        y[n] = 0.5*(noise[n] + noise[n-1])
 
+    # only run the main loop when L < N
+    if L < N:
+        for n in range(L, N):
+            sign = 1 if np.random.rand() < b else -1
+            y[n] = sign * R * 0.5 * (y[n - L] + y[n - L - 1])
+            
     return y
 ##########################################################################################
 

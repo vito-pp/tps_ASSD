@@ -15,6 +15,22 @@ from core.mixer import mix_buffers
 from core.espectograma import plot_spectrogram
 from core.effects import apply_effects
 
+def list_midi_files(midi_dir='midis'):
+    """
+    Lista en consola todos los archivos .mid en la carpeta especificada.
+    """
+    if not os.path.isdir(midi_dir):
+        print(f"Directorio '{midi_dir}' no existe.")
+        return []
+    files = sorted(f for f in os.listdir(midi_dir) if f.lower().endswith('.mid'))
+    if not files:
+        print(f"No se encontraron archivos .mid en '{midi_dir}'.")
+    else:
+        print(f"Archivos MIDI disponibles en '/{midi_dir}':")
+        for f in files:
+            print(f"  - {f}")
+    return 
+
 def type_of_synthesis():
     #Choose type of synthesis
     while True:
@@ -55,6 +71,7 @@ def select_track(midi_data):
     return track_idx_to_synthesize
 
 def main():
+    list_midi_files('midis')
     midi_file = input("Ingrese el nombre del archivo MIDI que desea sintetizar (incluyendo la extensión .mid).\n")
     midi_data = pretty_midi.PrettyMIDI("midis/" + midi_file)
 
@@ -114,7 +131,10 @@ def main():
 
     # Sound FX
     path_with_FX = apply_effects(final_path)
+
+    # Spectrogram
     plot_spectrogram(path_with_FX)
+
     return
 
 if __name__ == "__main__":

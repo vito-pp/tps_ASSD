@@ -10,10 +10,10 @@ def A_adsr(t: np.ndarray, dur: float, A_peak: float = 1.0) -> np.ndarray:
     '''
     Envolvente ADSR vectorizada para un array de tiempos t.
     '''
-    A = 0.01 * dur    # 1% attack
-    D = 0.1 * dur     # 10% decay
-    S = 0.7           # sustain level
-    R = 0.2 * dur     # 20% release
+    A = 0.16 * dur    # 16% attack
+    D = 0.16 * dur     # 16% decay
+    S = 0.5           # sustain level
+    R = 0.16 * dur     # 16% release
 
     env = np.zeros_like(t)
     # Attack
@@ -29,12 +29,45 @@ def A_adsr(t: np.ndarray, dur: float, A_peak: float = 1.0) -> np.ndarray:
     env = np.where(mask, S * (1 - (t - (dur - R)) / R), env)
     return env
 
+def A_woodwind(t: np.ndarray, dur: float, A_max: float = 1.0) -> np.ndarray:
+        # Punto en el que termina la fase de subida (20% de la duración)
+    ramp_end = 0.2 * dur
+    # Constante de tiempo elegida para que I(t) alcance I_max a t = ramp_end
+    tau = ramp_end / (np.log(A_max+1))
+
+    # Vectorizado: para t <= ramp_end usamos subida exponencial, luego A_max
+    I = np.where(
+        t <= ramp_end,
+        np.exp(t / tau) - 1,
+        A_max
+    )
+    return I
+
 def I_woodwind(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
-    '''
-    Índice de modulación decreciente exponencial para woodwind.
-    '''
-    tau = 0.05 * dur  # 5% de la duración
-    I = I_max * np.exp(-t / tau)
+    """
+    Índice de modulación para woodwind:
+    - Crece exponencialmente desde 0 hasta casi I_max durante el 20% inicial de la nota.
+    - Luego se mantiene constante = I_max.
+    
+    Parámetros:
+      t      : array de tiempos (segundos) desde el inicio de la nota, length N
+      dur    : duración total de la nota (segundos)
+      I_max  : índice máximo de modulación
+    
+    Devuelve:
+      I : array de long N con el índice I(t) en cada instante
+    """
+    # Punto en el que termina la fase de subida (20% de la duración)
+    ramp_end = 0.2 * dur
+    # Constante de tiempo elegida para que I(t) alcance I_max a t = ramp_end
+    tau = ramp_end / (np.log(I_max+1))
+
+    # Vectorizado: para t <= ramp_end usamos subida exponencial, luego I_max
+    I = np.where(
+        t <= ramp_end,
+        np.exp(t / tau) - 1,
+        I_max
+    )
     return I
 
 def I_brass(t: np.ndarray, dur: float, I_max: float) -> np.ndarray:
@@ -52,11 +85,12 @@ def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 441
       • woodwind: I(t) decae exponencial
     Genera un buffer por nota y los mezcla, normaliza, y guarda en:
         output/track{track_id}_fm.wav
+    Devuelve el .wav en "mix_buf"
     """
     # 1) Selección de timbre
     while True:
         choice = input("Síntesis FM: Metal (brass) (B) o Viento-Madera"
-                       " (woodwind) (W)? ").strip().lower()
+                        " (woodwind) (W)? ").strip().lower()
         if choice in ('b','w'):
             break
     is_brass = (choice == 'b')
@@ -89,7 +123,8 @@ def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 441
 
         # Envolventes vectorizadas
         I = I_brass(t, dur, I_max) if is_brass else I_woodwind(t, dur, I_max)
-        A = A_adsr(t, dur, A_peak=1.0)
+        A = A_adsr(t, dur, A_peak=1.0) if is_brass else A_woodwind(t, dur,
+                                                                    A_max=1.0)
 
         # 3.3) cálculo de la señal FM
         modulator = np.sin(2 * np.pi * fm * t - np.pi/2)
@@ -110,7 +145,7 @@ def fm_synthesis(midi_data: pretty_midi.PrettyMIDI, track_id: int, sr: int = 441
 
     # 5) Escribe WAV en output/
     os.makedirs("output", exist_ok=True)
-    out_path = os.path.join("output", f"track{track_id}_fm.wav")
+    out_path = os.path.join("output", f"Pista-{track_id}-fm.wav")
     sf.write(out_path, mix_buf, sr)
     print(f"→ FM generado en output/: {out_path}")
 

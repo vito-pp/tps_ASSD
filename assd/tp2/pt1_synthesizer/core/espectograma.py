@@ -24,6 +24,13 @@ def plot_spectrogram(wav_path: str):
     """
     Carga el WAV dado y guarda su espectrograma en escala log como imagen PNG.
     """
+
+    si_o_no = input("Desea ver el espectrograma " \
+                    "de la mezcla master? [S/N]\n").lower() == 's'
+    if si_o_no==False:
+        print("No se han generado el espectrograma.")
+        return
+
     if not os.path.exists(wav_path):
         raise FileNotFoundError(f"❌ Archivo no encontrado: {wav_path}")
 

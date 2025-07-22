@@ -57,7 +57,7 @@ def main():
 
     # Guardar la señal filtrada
     sf.write('Filtered_W_LMS.wav', y, sr1)
-    print('Filtered audio saved to filtered_bebe.wav')
+    print('Filtered audio saved to Filtered_W_LMS.wav')
 
     # Calcular MSE
     mse_d_y = np.mean((d - y) ** 2)
@@ -80,8 +80,8 @@ def main():
     plt.xlabel('Tiempo (s)')
     plt.ylabel('Amplitud')
     plt.title(f'Señal Ruidosa vs Filtrada (SNR Filtrada: {snr_filtered:.2f} dB)')
-    plt.xlim(0, 0.02)
-    plt.ylim(-2, 2)
+    plt.xlim(0, 1)
+    plt.ylim(-1, 1)
     plt.grid(True)
     plt.show()
 

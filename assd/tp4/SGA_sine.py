@@ -87,6 +87,7 @@ class GeneticAlgorithm:
                 ind.bitstring[i] ^= 1
 
     def run(self, x, d, generations):
+        best_fitnesses = []
         for gen in range(1, generations + 1):
             self.evaluate(x, d)
             self.fitnesses = np.array([ind.fitness for ind in self.population])
@@ -103,21 +104,31 @@ class GeneticAlgorithm:
                 i += 2
             self.population = self.new_population[:self.pop_size]
             best_fit = max(self.fitnesses)
+            best_fitnesses.append(best_fit)
             print(f"[GA] Gen {gen}/{generations} — Best fitness: {best_fit:.6f}")
         self.evaluate(x, d)
         best_ind = max(self.population, key=lambda ind: ind.fitness)
-        return best_ind
+        return (best_ind, best_fitnesses)
 
 def run_ga_on_signals(noisy_signal, clean_signal):
     m = 8
-    P = 20
-    pop_size = 700
-    generations = 100
+    P = 30
+    pop_size = 1000
+    generations = 250
     mutation_rate = 1/500
 
     print(f"Starting GA on synthetic signal: pop={pop_size}, gens={generations}, bits/param={m}, order={P}")
     ga = GeneticAlgorithm(P + 1, m, pop_size, mutation_rate)
-    best = ga.run(noisy_signal, clean_signal, generations)
+    best, best_fitnesses = ga.run(noisy_signal, clean_signal, generations)
+
+    # Plot best fitness per generation
+    plt.figure()
+    plt.plot(best_fitnesses)
+    plt.xlabel('Generation')
+    plt.ylabel('Best Fitness')
+    plt.title('Best Fitness per Generation')
+    plt.grid(True)
+    plt.show()
 
     decoded = best.decode()
     weights_opt = decoded[:-1]

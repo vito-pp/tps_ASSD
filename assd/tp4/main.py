@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Single-file GA-driven LMS noise-cancelling system.
-Now also optimizes the LMS step-size μ alongside filter weights.
+SGA-driven LMS noise-cancelling system 
+implementation.
 """
 import random
 import numpy as np

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Single-file GA-driven LMS noise-cancelling system.
-Now also optimizes the LMS step-size μ alongside filter weights.
+SGA-driven LMS noise-cancelling system 
+implementation.
 """
 import random
 import numpy as np
 import soundfile as sf
+import matplotlib.pyplot as plt
 
 class Individual:
     def __init__(self, bitstring, P, m):
@@ -105,6 +106,7 @@ class GeneticAlgorithm:
                 ind.bitstring[i] ^= 1
 
 
+
     def run(self, x, d, generations):
         for gen in range(1, generations + 1):
             # Generacion de Fitness en la poblacion inicial
@@ -128,7 +130,15 @@ class GeneticAlgorithm:
         self.evaluate(x, d)
         best_ind = max(self.population, key=lambda ind: ind.fitness)
         return best_ind
-
+# --- SNR calculation ---
+def calculate_snr(signal, reference):
+    signal_power = np.mean(signal ** 2)
+    noise = signal - reference
+    noise_power = np.mean(noise ** 2)
+    if noise_power == 0:
+        return float('inf')  # Evitar división por cero
+    snr = 10 * np.log10(signal_power / noise_power)
+    return snr
 # --- Main entrypoint ---
 def main():
     # Load and preprocess audio
@@ -143,9 +153,9 @@ def main():
     # x, d = x[:max_samples], d[:max_samples]
 
     m = 8
-    P = 10
-    pop_size = 40
-    generations = 4
+    P = 15
+    pop_size = 100
+    generations = 10
     mutation_rate = 1/1000
 
     print(f"Starting GA: pop={pop_size}, gens={generations}, bits/param={m}, order={P}")
@@ -160,8 +170,8 @@ def main():
 
     # Save filtered output using optimized weights and mu
     y, _ = apply_lms_filter(x, d, decoded)
-    sf.write('filtered_bebe.wav', y, sr1)
-    print('Filtered audio saved to filtered.wav')
+    sf.write('filtered_guitar.wav', y, sr1)
+    print('Filtered audio saved to filtered_guitar.wav')
 
     # Print MSE between filtered output and desired
     mse_d_y = np.mean((d - y) ** 2)
@@ -170,6 +180,25 @@ def main():
     # Print MSE between input and filtered output
     mse_x_y = np.mean((x - y) ** 2)
     print(f"MSE between input and filtered output: {mse_x_y:.6f}")
-
+    SNR_before= calculate_snr(x,d)
+    SNR_after=calculate_snr(y,d)
+    print("SNR before filtering: {:.2f} dB".format(SNR_before))
+    print("SNR after filtering: {:.2f} dB".format(SNR_after))
+    # Visualización
+    min_length = min(len(x), len(d))
+    t =np.linspace(0, min_length/sr1, min_length)
+    plt.figure(figsize=(10, 6))
+    plt.plot(t, x, label='Señal Ruidosa', alpha=0.7)
+    plt.plot(t, y, label='Señal Filtrada (SGA + LMS)', color='red')
+    plt.plot(t, d, label='Señal Deseada', alpha=0.5)
+    plt.title('Comparación de Señales')
+    plt.legend()
+    plt.xlabel('Tiempo (s)')
+    plt.ylabel('Amplitud')
+    plt.title(f'Señal Ruidosa vs Filtrada (SNR Filtrada: {SNR_after:.2f} dB)')
+    plt.xlim(0, 1)
+    plt.ylim(-1, 1)
+    plt.grid(True)
+    plt.show()
 if __name__ == '__main__':
     main()

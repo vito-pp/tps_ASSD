@@ -9,6 +9,10 @@
 
 #include "drv/board.h"
 #include "drv/gpio.h"
+#include "drv/ADC.h"
+#include "drv/DAC.h"
+#include "drv/dma.h"
+#include "drv/pit.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -28,12 +32,21 @@
 
 void App_Init (void)
 {
+    // leds init
     gpioMode(PIN_LED_BLUE, OUTPUT);
+    gpioWrite(PIN_LED_BLUE, !LED_ACTIVE);
+    gpioMode(PIN_LED_RED, OUTPUT);
+    gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+
+    DMA_Init();
+    PIT_Init();
+    ADC_Init(true); // dma request = true
+    DAC_Init();
 }
 
 void App_Run (void)
 {
-    gpioToggle(PIN_LED_BLUE);
+    
 }
 
 

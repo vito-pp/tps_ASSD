@@ -88,6 +88,7 @@ class GeneticAlgorithm:
 
     def run(self, x, d, generations):
         best_fitnesses = []
+        max_SNR = []
         for gen in range(1, generations + 1):
             self.evaluate(x, d)
             self.fitnesses = np.array([ind.fitness for ind in self.population])
@@ -112,10 +113,10 @@ class GeneticAlgorithm:
 
 def run_ga_on_signals(noisy_signal, clean_signal):
     m = 8
-    P = 30
+    P = 20
     pop_size = 1000
-    generations = 250
-    mutation_rate = 1/500
+    generations = 200
+    mutation_rate = 1/250
 
     print(f"Starting GA on synthetic signal: pop={pop_size}, gens={generations}, bits/param={m}, order={P}")
     ga = GeneticAlgorithm(P + 1, m, pop_size, mutation_rate)
@@ -160,7 +161,7 @@ def run_ga_on_signals(noisy_signal, clean_signal):
 if __name__ == "__main__":
     np.random.seed(0)
     t = np.linspace(0, 10, 100)
-    clean_signal = np.sin(t)
+    clean_signal = np.sign(np.sin(t))
     noise = np.random.normal(0, 0.5, t.shape)
     noisy_signal = clean_signal + noise
     run_ga_on_signals(noisy_signal, clean_signal)

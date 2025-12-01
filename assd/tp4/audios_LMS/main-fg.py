@@ -76,6 +76,8 @@ def main():
     plt.figure(figsize=(10, 6))
     plt.plot(t, x, label='Señal Ruidosa', alpha=0.7)
     plt.plot(t, y, label='Señal Filtrada (LMS)', color='red')
+    plt.plot(t, d, label='Señal Deseada', alpha=0.5)
+    plt.title('Comparación de Señales')
     plt.legend()
     plt.xlabel('Tiempo (s)')
     plt.ylabel('Amplitud')

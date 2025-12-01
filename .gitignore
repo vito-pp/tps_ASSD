@@ -16,6 +16,8 @@ build/
 # IDE settings
 .vscode/
 .idea/
+*.launch
+Debug/
 
 # Environment variables
 .env

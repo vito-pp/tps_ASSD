@@ -65,7 +65,7 @@ void App_Init (void)
     gpioWrite(PIN_LED_BLUE, !LED_ACTIVE);
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-    gpioMode(PIN_TP1, OUTPUT);
+    gpioMode(PIN_TP69, OUTPUT);
 
     DMA_Init();
     PIT_Init();
@@ -188,7 +188,7 @@ void adcDmaCallback(void *user)
 
 void dacDmaCallback(void *user)
 {
-    gpioToggle(PIN_TP1);
+    gpioToggle(PIN_TP69);
 }
 
 void pitCallback(void *user)

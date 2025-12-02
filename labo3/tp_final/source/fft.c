@@ -4,7 +4,7 @@
 #include <stdbool.h>
 //#include <stdio.h>
 
-static complex float W[FFT_LEN];
+static complex float W[FFT_SIZE/2];
 
 // don't know why it doesn't recognize the M_PI on math.h
 const double PI = 3.141592653589793;
@@ -41,14 +41,14 @@ void fft(complex float *in, complex float *out)
     // reorder input by bit reversal
     if (in != out) 
     {
-        bitReverse(in, out, FFT_LEN);
+        bitReverse(in, out, FFT_SIZE);
     } else 
     {
         // in-place (if in = out): need temp array for bit reversal
         size_t bits = 0;
-        for (size_t temp = FFT_LEN; temp > 1; temp >>= 1) 
+        for (size_t temp = FFT_SIZE; temp > 1; temp >>= 1) 
             bits++;
-        for (size_t i = 0; i < FFT_LEN; i++) 
+        for (size_t i = 0; i < FFT_SIZE; i++) 
         {
             size_t rev = 0;
             for (size_t b = 0; b < bits; b++) 
@@ -73,20 +73,20 @@ void fft(complex float *in, complex float *out)
     //            sizeof *W * (n/2));    
     //     return;
     // }
-    for (size_t k = 0; k < FFT_LEN/2; k++) 
+    for (size_t k = 0; k < FFT_SIZE/2; k++) 
     {
-        float angle = -2.0f * PI * k / (float)FFT_LEN;
+        float angle = -2.0f * PI * k / (float)FFT_SIZE;
         W[k] = cosf(angle) + I * sinf(angle);
     }
     
     // FFT
-    for (size_t len = 2; len <= FFT_LEN; len <<= 1) 
+    for (size_t len = 2; len <= FFT_SIZE; len <<= 1) 
     {
         size_t half = len >> 1;
         // how far apart in W[] successive twiddles are
-        size_t step = FFT_LEN / len;
+        size_t step = FFT_SIZE / len;
 
-        for (size_t i = 0; i < FFT_LEN; i += len) 
+        for (size_t i = 0; i < FFT_SIZE; i += len) 
         {
             for (size_t j = 0; j < half; j++) 
             {
@@ -99,9 +99,9 @@ void fft(complex float *in, complex float *out)
         }
     }
     // normalizing the gain
-    for (size_t i = 0; i < FFT_LEN; i++)
+    for (size_t i = 0; i < FFT_SIZE; i++)
     {
-        out[i] /= (complex float)FFT_LEN;
+        out[i] /= (complex float)FFT_SIZE;
     }
 
     //free(W);

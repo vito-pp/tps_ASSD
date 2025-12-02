@@ -118,6 +118,23 @@ typedef struct
     void *user;             // user cookie for both callbacks
 } dma_cfg_t;
 
+// useful TCD struct to use scatter and gather
+typedef struct 
+{
+    uint32_t SADDR;
+    uint16_t SOFF;
+    uint16_t ATTR;
+    uint32_t NBYTES;     // corresponds to NBYTES_MLNO
+    uint32_t SLAST;
+    uint32_t DADDR;
+    uint16_t DOFF;
+    uint16_t CITER;      // CITER_ELINKNO
+    uint32_t DLAST_SGA;
+    uint16_t CSR;
+    uint16_t BITER;      // BITER_ELINKNO
+} dma_tcd_t;
+
+
 /*******************************************************************************
  * PUBLIC API
  ******************************************************************************/

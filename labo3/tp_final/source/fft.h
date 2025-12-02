@@ -8,7 +8,7 @@
 #ifndef FFT_H
 #define FFT_H
 
-#define FFT_LEN 256
+#define FFT_SIZE 256
 
 #include <stddef.h>
 #include <complex.h>
@@ -18,9 +18,9 @@
  * If in = out, then the in array is overwritten with its DFT
  * 
  * @param in Complex float pointer to an input array of lenght n which 
- *              represents a time domain signal
+ * represents a time domain signal
  * @param out Complex float pointer to an input array of lenght n which 
- *              represents the DFT of the input signal
+ * represents the DFT of the input signal
  */
 void fft(complex float *in, complex float *out);
 

@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-//#include <stdio.h>
 
-static complex float W[FFT_SIZE/2];
+static complex float W[FFT_SIZE/2]; // twiddle factors
+static bool twiddles_computed = false;
 
 // don't know why it doesn't recognize the M_PI on math.h
 const double PI = 3.141592653589793;
-
-// static bool isPowerOf2(size_t n){ return (n & (n - 1)) == 0; }
 
 // bit reverse ordering. writes the bit reverse on the out array so the in 
 // array remains untouched
@@ -31,13 +29,6 @@ static void bitReverse(const complex float *in, complex float *out, size_t n)
 
 void fft(complex float *in, complex float *out)
 {
-    // validation 
-    // if(!isPowerOf2(n))
-    // {
-    //     //fprintf(stderr, "n is not a power of 2. Returning...");
-    //     return;
-    // }
-
     // reorder input by bit reversal
     if (in != out) 
     {
@@ -65,20 +56,17 @@ void fft(complex float *in, complex float *out)
         }
     }
 
-    // precomputes the twiddle factors
-    //complex float *W = malloc(sizeof *W * (n/2));
-    // if (W == NULL) 
-    // {
-    //     fprintf(stderr, "Failed to allocate %zu bytes.\n", 
-    //            sizeof *W * (n/2));    
-    //     return;
-    // }
-    for (size_t k = 0; k < FFT_SIZE/2; k++) 
+    if (!twiddles_computed) // compute only once
     {
-        float angle = -2.0f * PI * k / (float)FFT_SIZE;
-        W[k] = cosf(angle) + I * sinf(angle);
+        // precomputes the twiddle factors
+        for (size_t k = 0; k < FFT_SIZE/2; k++) 
+        {
+            float angle = -2.0f * PI * k / (float)FFT_SIZE;
+            W[k] = cosf(angle) + I * sinf(angle);
+        }
+        twiddles_computed = true;
     }
-    
+
     // FFT
     for (size_t len = 2; len <= FFT_SIZE; len <<= 1) 
     {
@@ -103,6 +91,4 @@ void fft(complex float *in, complex float *out)
     {
         out[i] /= (complex float)FFT_SIZE;
     }
-
-    //free(W);
 }

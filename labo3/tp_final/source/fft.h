@@ -8,10 +8,10 @@
 #ifndef FFT_H
 #define FFT_H
 
-#define FFT_SIZE 256
-
 #include <stddef.h>
 #include <complex.h>
+
+#define FFT_SIZE 1024
 
 /**
  * @brief Computes the FFT of a complex array. Normalized gain as 1/n. 

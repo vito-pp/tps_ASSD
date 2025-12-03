@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     app.c
   @brief    Implementation of a FFT on a FRDM K64F dev board. Samples a signal
-  through the ADC and then outputs the FFTs magnitude with the DAC.
+  through the ADC and then outputs the FFT's magnitude with the DAC.
  ******************************************************************************/
 
 /*******************************************************************************
@@ -117,7 +117,7 @@ void App_Init (void)
     pit_cfg_t pit_adc_cfg =
     {
         .ch = 0,
-        .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling rate
+        .load_val = PIT_TICKS_FROM_US(10), // 100kHz ADC sampling rate
         .periodic = true,
         .int_en = true,
         .dma_req = false,
@@ -221,7 +221,7 @@ void computeMagnitude(complex float *fft_out, uint16_t *dac_buf)
     {
     	float re = ((float *)&fft_out[k])[0];
     	float im = ((float *)&fft_out[k])[1];
-    	float m  = sqrtf(re*re + im*im);
+    	float m = sqrtf(re*re + im*im);
 
         mag[k] = m;
         if (m > max_mag) max_mag = m;
@@ -236,11 +236,8 @@ void computeMagnitude(complex float *fft_out, uint16_t *dac_buf)
         if (norm < 0.0f) norm = 0.0f; // just to be sure, clamp norm
         if (norm > 1.0f) norm = 1.0f;
 
-        dac_buf[k] = (uint16_t)(norm * 4095.0f);
+        dac_buf[k] = (uint16_t)(norm * 4095.0f); // for 12-bit DAC
     }
-
-    // Optionally: force DC bin to a fixed level for easier triggering
-    // dac_buf[0] = 0; or 4095; etc.
 }
 
 

@@ -2,14 +2,14 @@
 #define WINDOW_H
 
 #include "stdint.h"
+#include "fft.h"
 
-#define WINDOW_SIZE 1024
+extern double window[FFT_SIZE]; 
 
-extern double window[WINDOW_SIZE]; 
-
-void fill_hanning_window(uint16_t N);
-void fill_hamming_window(uint16_t N);
-void fill_blackman_window(uint16_t N);
-void fill_blackman_harris_window(uint16_t N);
+void fill_rectangular_window(void);
+void fill_hann_window(void);
+void fill_hamming_window(void);
+void fill_blackman_window(void);
+void fill_blackman_harris_window(void);
 
 #endif

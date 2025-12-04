@@ -139,6 +139,9 @@ void App_Init (void)
         .user = NULL
     };
     PIT_Config(&pit_dac_cfg);
+
+    // choose window to use
+    fill_rectangular_window();
 }
 
 void App_Run (void)
@@ -205,21 +208,7 @@ void adcBufToComplex(volatile uint16_t *adc_buf, complex float *fft_in)
         int32_t centered = (int32_t)adc_buf[i] - (int32_t)ADC_MID; // remove DC
         float x = (float)centered * ADC_SCALE; // [-1, 1]
 
-        //apply window  for less spectral leakage
-        #ifdef HANNING
-        fill_hanning_window(FFT_SIZE);
-        #endif
-        #ifdef HAMMING
-        fill_hamming_window(FFT_SIZE);
-        #endif
-        #ifdef BLACKMAN
-        fill_blackman_window(FFT_SIZE);
-        #endif
-        #ifdef BLACKMAN_HARRIS
-        fill_blackman_harris_window(FFT_SIZE);
-        #endif
-        
-        x *= window[i];
+        x *= window[i]; // apply window  for less spectral leakage      
 
         fft_in[i] = x + 0.0f*I;
     }

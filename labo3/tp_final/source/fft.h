@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <complex.h>
 
-#define FFT_SIZE 1024
+#define FFT_SIZE 1024 // has to be a power of two
 
 /**
  * @brief Computes the FFT of a complex array. Normalized gain as 1/n. 
